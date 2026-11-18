@@ -78,7 +78,7 @@ Después abre una sesión nueva o ejecuta `/reload-plugins`.
 
 ## Requisitos y límites
 
-- Node 18 o superior. Sin dependencias.
+- Node 20 o superior. Sin dependencias.
 - El proxy solo reenvía a `localhost` y solo escucha en `127.0.0.1`.
   Solo acepta notas de las páginas que él mismo sirve, así que otra web
   abierta en tu navegador no puede colar una.

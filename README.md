@@ -76,7 +76,7 @@ Then start a new session, or run `/reload-plugins`.
 
 ## Requirements and limits
 
-- Node 18 or later. No dependencies.
+- Node 20 or later. No dependencies.
 - The proxy only forwards to `localhost` and only listens on `127.0.0.1`.
   Notes are accepted only from the pages it serves, so another site open in
   your browser cannot plant one.

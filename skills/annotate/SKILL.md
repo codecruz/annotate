@@ -18,7 +18,7 @@ change. You read the notes and do the work.
    node "<this skill's base directory>/server.mjs" --proxy http://localhost:<site-port> --port 4400 --out .annotations.json
    ```
 
-   `server.mjs` sits next to this file. It needs Node 18 or later and has no
+   `server.mjs` sits next to this file. It needs Node 20 or later and has no
    dependencies.
 
    `--proxy` only accepts localhost. Pick another `--port` if 4400 is busy.
