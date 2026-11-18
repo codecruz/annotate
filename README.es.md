@@ -29,6 +29,19 @@ Cada nota guarda la página, un selector, el texto y el HTML del elemento, el
 tamaño de la ventana y el tema de color, para que «esto es demasiado grande
 en móvil» llegue con su contexto.
 
+## Otras IA
+
+El proxy y la capa no dependen de Claude: son Node sin más y un archivo
+JSON. Con cualquier otro asistente:
+
+```
+node skills/annotate/server.mjs --proxy http://localhost:<puerto-de-tu-web>
+```
+
+Anota y después indica al asistente el archivo `.annotations.json`, o abre
+**Notas** y pulsa **Copiar notas como texto** para obtener un resumen en
+Markdown que puedes pegar en cualquier chat.
+
 ## Instalación
 
 En Claude Code:

@@ -28,6 +28,19 @@ Each note records the page, a selector, the element's text and HTML, the
 viewport size and the colour theme, so "this is too big on mobile" carries
 its context.
 
+## Other AI tools
+
+The proxy and the layer do not depend on Claude: they are plain Node and a
+JSON file. With any other assistant:
+
+```
+node skills/annotate/server.mjs --proxy http://localhost:<site-port>
+```
+
+Annotate, then either point the assistant at `.annotations.json`, or open
+**Notes** and press **Copy notes as text** to get a Markdown brief you can
+paste into any chat.
+
 ## Install
 
 In Claude Code:

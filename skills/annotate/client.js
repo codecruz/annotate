@@ -10,12 +10,14 @@
         notes: "Notas", note: "Nota", hint: "Qué cambiar aquí…", keys: "Ctrl+Enter guarda · Esc cancela", parent: "Ampliar al contenedor",
         del: "Borrar", cancel: "Cancelar", save: "Guardar", empty: "Sin notas. Pulsa «Anotar» y elige un elemento.", view: "Ver",
         go: "Ir a la página", move: "Mover la barra al otro lado", saved: "Nota guardada", deleted: "Nota borrada",
-        failed: "No se pudo guardar. ¿Sigue abierta la sesión?", missing: "elemento no encontrado", dialog: "Nota para", shortcut: "Alt+A" }
+        failed: "No se pudo guardar. ¿Sigue abierta la sesión?", copy: "Copiar notas como texto", copied: "Notas copiadas: pégalas en tu asistente",
+        noCopy: "No se pudo copiar", missing: "elemento no encontrado", dialog: "Nota para", shortcut: "Alt+A" }
     : { annotate: "Annotate", pick: "Pick an element", pickHelp: "Click an element, or use the arrow keys and Enter. Esc cancels.", page: "Page note",
         notes: "Notes", note: "Note", hint: "What to change here…", keys: "Ctrl+Enter saves · Esc cancels", parent: "Widen to the container",
         del: "Delete", cancel: "Cancel", save: "Save", empty: "No notes yet. Press “Annotate” and pick an element.", view: "View",
         go: "Go to page", move: "Move the bar to the other side", saved: "Note saved", deleted: "Note deleted",
-        failed: "Could not save. Is the session still open?", missing: "element not found", dialog: "Note for", shortcut: "Alt+A" };
+        failed: "Could not save. Is the session still open?", copy: "Copy notes as text", copied: "Notes copied: paste them into your assistant",
+        noCopy: "Could not copy", missing: "element not found", dialog: "Note for", shortcut: "Alt+A" };
 
   const host = document.createElement("div");
   host.style.cssText = "position:absolute;top:0;left:0;width:0;height:0;z-index:2147483647";
@@ -50,7 +52,6 @@
       .row { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
       .panel { max-height: 60vh; overflow: auto; }
       .item { padding: 10px 0; border-top: 1px solid #444; }
-      .item:first-child { border-top: 0; padding-top: 0; }
       .item b { color: #facc15; }
       .item .row { justify-content: flex-start; margin-top: 8px; }
       [hidden] { display: none !important; }
@@ -153,7 +154,12 @@
       pins.append(pin);
     });
     list.textContent = `${T.notes} (${notes.length})`;
+    const copy = document.createElement("button");
+    copy.textContent = T.copy;
+    copy.style.marginBottom = "10px";
+    copy.onclick = () => navigator.clipboard.writeText(brief()).then(() => say(T.copied), () => say(T.noCopy));
     panel.replaceChildren(
+      ...(notes.length ? [copy] : []),
       ...(notes.length ? notes : [null]).map((note, i) => {
         const item = document.createElement("div");
         item.className = "item";
@@ -184,6 +190,23 @@
       }),
     );
   }
+
+  // The notes as a plain Markdown brief, for any assistant that cannot read
+  // the notes file itself.
+  const brief = () => [
+    "# Page annotations",
+    "",
+    "Each note below was left on an element of a locally running site. Find the source code that renders the element and make the change the note asks for.",
+    ...notes.flatMap((note, i) => [
+      "",
+      `## ${i + 1}. ${note.path}`,
+      `- Note: ${note.note}`,
+      `- Element: <${note.tag}> ${note.text}`,
+      `- Selector (rendered DOM): \`${note.selector}\``,
+      ...(note.html ? [`- HTML: \`${note.html.replace(/\s+/g, " ")}\``] : []),
+      `- Seen at: ${note.viewport}, ${note.theme} theme`,
+    ]),
+  ].join("\n");
 
   const showPanel = (on) => {
     panel.hidden = !on;
