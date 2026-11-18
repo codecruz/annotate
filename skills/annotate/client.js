@@ -1,5 +1,6 @@
 // Overlay injected by server.mjs. Pick an element (mouse, touch or keyboard),
 // write a note; every change is saved through POST /__annotate/notes.
+// "Send to Claude" (POST /__annotate/send) tells a waiting assistant to start.
 (() => {
   if (window.__annotate) return;
   window.__annotate = true;
@@ -11,13 +12,17 @@
         del: "Borrar", cancel: "Cancelar", save: "Guardar", empty: "Sin notas. Pulsa «Anotar» y elige un elemento.", view: "Ver",
         go: "Ir a la página", move: "Mover la barra al otro lado", saved: "Nota guardada", deleted: "Nota borrada",
         failed: "No se pudo guardar. ¿Sigue abierta la sesión?", copy: "Copiar notas como texto", copied: "Notas copiadas: pégalas en tu asistente",
-        noCopy: "No se pudo copiar", missing: "elemento no encontrado", dialog: "Nota para", shortcut: "Alt+A" }
+        noCopy: "No se pudo copiar", send: "Enviar a Claude", sent: "Enviado: Claude empieza con las notas",
+        noSend: "No se pudo enviar. ¿Sigue abierta la sesión?",
+        queued: "Claude está ocupado o no escucha. Si no empieza, pídeselo en el chat.", missing: "elemento no encontrado", dialog: "Nota para", shortcut: "Alt+A" }
     : { annotate: "Annotate", pick: "Pick an element", pickHelp: "Click an element, or use the arrow keys and Enter. Esc cancels.", page: "Page note",
         notes: "Notes", note: "Note", hint: "What to change here…", keys: "Ctrl+Enter saves · Esc cancels", parent: "Widen to the container",
         del: "Delete", cancel: "Cancel", save: "Save", empty: "No notes yet. Press “Annotate” and pick an element.", view: "View",
         go: "Go to page", move: "Move the bar to the other side", saved: "Note saved", deleted: "Note deleted",
         failed: "Could not save. Is the session still open?", copy: "Copy notes as text", copied: "Notes copied: paste them into your assistant",
-        noCopy: "Could not copy", missing: "element not found", dialog: "Note for", shortcut: "Alt+A" };
+        noCopy: "Could not copy", send: "Send to Claude", sent: "Sent: Claude is starting on the notes",
+        noSend: "Could not send. Is the session still open?",
+        queued: "Claude is busy or not listening. If it does not start, ask it in the chat.", missing: "element not found", dialog: "Note for", shortcut: "Alt+A" };
 
   const host = document.createElement("div");
   host.style.cssText = "position:absolute;top:0;left:0;width:0;height:0;z-index:2147483647";
@@ -40,6 +45,8 @@
       .pop, .panel { width: 100%; padding: 12px; }
       button { min-height: 40px; border: 0; border-radius: 6px; padding: 0 14px; background: #2e2e2e; color: #fff; cursor: pointer; }
       button:hover { background: #444; }
+      button:disabled { opacity: .55; cursor: not-allowed; }
+      button:disabled:hover { background: #2e2e2e; }
       button.on, button.primary { background: #facc15; color: #111; font-weight: 700; }
       button:focus-visible, textarea:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
       .pin:focus-visible { outline: 3px solid #111; outline-offset: 4px; }
@@ -76,6 +83,7 @@
         <button class="toggle" aria-pressed="false" title="${T.shortcut}" aria-keyshortcuts="Alt+A">${T.annotate}</button>
         <button class="page">${T.page}</button>
         <button class="list" aria-expanded="false">${T.notes} (0)</button>
+        <button class="send" disabled>${T.send}</button>
         <button class="move" aria-label="${T.move}" title="${T.move}">⇄</button>
       </div>
     </div>`;
@@ -83,7 +91,7 @@
 
   const $ = (s) => root.querySelector(s);
   const hl = $(".hl"), pins = $(".pins"), ui = $(".ui"), pop = $(".pop"), panel = $(".panel"), status = $(".status");
-  const toggle = $(".toggle"), list = $(".list");
+  const toggle = $(".toggle"), list = $(".list"), send = $(".send");
   const area = pop.querySelector("textarea");
   let notes = [];
   let picking = false;
@@ -155,6 +163,9 @@
       pins.append(pin);
     });
     list.textContent = `${T.notes} (${notes.length})`;
+    // Always on show, so it can be found before the first note exists.
+    send.disabled = !notes.length;
+    send.title = notes.length ? "" : T.empty;
     const copy = document.createElement("button");
     copy.textContent = T.copy;
     copy.style.marginBottom = "10px";
@@ -257,6 +268,15 @@
   toggle.onclick = () => { if (!pop.hidden) close(); setPicking(!picking); };
   $(".page").onclick = () => choose(document.body);
   list.onclick = () => { showPanel(panel.hidden); if (!pop.hidden) close(); };
+  send.onclick = async () => {
+    try {
+      const response = await fetch("/__annotate/send", { method: "POST" });
+      if (!response.ok) throw new Error(response.statusText);
+      say((await response.json()).listening ? T.sent : T.queued);
+    } catch {
+      say(T.noSend);
+    }
+  };
   $(".move").onclick = () => {
     const left = ui.classList.toggle("left");
     try { localStorage.setItem("annotate-side", left ? "left" : "right"); } catch {}

@@ -24,9 +24,20 @@ change. You read the notes and do the work.
    `--proxy` only accepts localhost. Pick another `--port` if 4400 is busy.
    `--open` opens the page in the user's default browser and brings it to
    the foreground; do not open it yourself as well.
-3. Keep the notes out of git without touching the repo's `.gitignore`:
+3. Start the waiter in the background too, as its own command, with the
+   proxy's port:
+
+   ```bash
+   node "<this skill's base directory>/wait.mjs" 4400
+   ```
+
+   It ends when the user presses **Send to Claude** on the page. When it
+   exits printing `apply`, that is the user telling you to start: carry out
+   section 2 without asking. If it exits any other way (the session was
+   closed), do nothing.
+4. Keep the notes out of git without touching the repo's `.gitignore`:
    add `.annotations.json` to `.git/info/exclude` if it is not there.
-4. Give the user the URL (`http://localhost:4400/...`), in case the browser
+5. Give the user the URL (`http://localhost:4400/...`), in case the browser
    did not open, and how it works:
    - **Annotate** (or Alt+A), then click an element. With the keyboard: the
      arrow keys move through the page structure and Enter picks.
@@ -36,9 +47,12 @@ change. You read the notes and do the work.
    - Numbered pins mark the notes; **Notes** lists them across pages, and a
      pin reopens its note to edit or delete. Esc cancels. **⇄** moves the bar
      to the other corner if it covers something.
+   - **Send to Claude** tells you to start on the notes; saying so in the
+     chat works too.
    - Notes save on every change. The overlay shows in Spanish when the
      browser language is Spanish, in English otherwise.
-5. Stop there and wait for the user to say they are done.
+6. Stop there and wait for **Send to Claude** or for the user to say they
+   are done.
 
 ## 2. Carry out the notes
 
@@ -62,6 +76,9 @@ change. You read the notes and do the work.
 7. Remove each note you resolved from `.annotations.json` and leave the ones
    still open, so the pins left on the page are the pending work. Report
    note by note what you changed and what is still open.
+8. If the session is still open, start `wait.mjs` again in the background
+   (section 1, step 3) so the button works for the next round, and tell the
+   user to reload the page.
 
 ## Limits
 

@@ -9,6 +9,7 @@ import { fileURLToPath } from "node:url";
 
 // fileURLToPath, not URL.pathname: on Windows the latter is "/D:/…".
 const SERVER = fileURLToPath(new URL("../skills/annotate/server.mjs", import.meta.url));
+const WAIT = fileURLToPath(new URL("../skills/annotate/wait.mjs", import.meta.url));
 
 const PORT = 4471;
 const base = `http://localhost:${PORT}`;
@@ -73,4 +74,31 @@ test("refuses notes from another site and requests for another host", async () =
 test("refuses to proxy anything that is not localhost", async () => {
   const child = spawn("node", [SERVER, "--proxy", "https://example.com"]);
   assert.equal(await new Promise((done) => child.once("exit", done)), 1);
+});
+
+test("the send button wakes whoever waits, now or later", async () => {
+  const send = async (headers = { origin: base }) => fetch(`${base}/__annotate/send`, { method: "POST", headers });
+  const wait = (port) =>
+    new Promise((done) => {
+      const child = spawn("node", [WAIT, String(port)]);
+      let text = "";
+      child.stdout.on("data", (chunk) => (text += chunk));
+      child.once("exit", (code) => done({ code, text }));
+    });
+
+  // Pressed with nobody waiting: kept for the next wait.
+  assert.deepEqual(await (await send()).json(), { listening: false });
+  assert.deepEqual(await wait(PORT), { code: 0, text: "apply\n" });
+
+  // Pressed while waiting: the wait ends then, not before.
+  let ended = false;
+  const waiting = wait(PORT).then((result) => ((ended = true), result));
+  await new Promise((done) => setTimeout(done, 500));
+  assert.equal(ended, false);
+  assert.deepEqual(await (await send()).json(), { listening: true });
+  assert.deepEqual(await waiting, { code: 0, text: "apply\n" });
+
+  assert.equal((await send({ origin: "https://evil.example" })).status, 403);
+  // No session on that port: fails instead of waiting for ever.
+  assert.equal((await wait(PORT + 1)).code, 1);
 });

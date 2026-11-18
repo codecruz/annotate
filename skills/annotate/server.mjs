@@ -19,6 +19,10 @@ const port = Number(args.port ?? 4400);
 const out = resolve(args.out ?? ".annotations.json");
 const client = new URL("./client.js", import.meta.url);
 const MAX_BODY = 1_000_000;
+// "Send to Claude": wait.mjs holds a request open here until the button is pressed.
+const waiters = new Set();
+let queued = false; // pressed while nothing was waiting: the next wait returns at once
+const apply = (res) => res.writeHead(200, { "content-type": "text/plain; charset=utf-8" }).end("apply\n");
 
 const readNotes = async () => {
   try {
@@ -64,6 +68,18 @@ createServer(async (req, res) => {
       }
       res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
       return res.end(JSON.stringify(await readNotes()));
+    }
+    if (req.url === "/__annotate/wait") {
+      if (queued) return (queued = false), apply(res);
+      waiters.add(res);
+      return res.once("close", () => waiters.delete(res));
+    }
+    if (req.url === "/__annotate/send" && req.method === "POST") {
+      const listening = waiters.size > 0;
+      queued = !listening;
+      waiters.forEach(apply);
+      res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
+      return res.end(JSON.stringify({ listening }));
     }
 
     const headers = { ...req.headers, host: new URL(upstream).host, "accept-encoding": "identity" };

@@ -23,38 +23,40 @@
 <meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)">
 <link rel="canonical" href="https://codecruz.github.io/annotate/">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<script>
+  // Before first paint, so a saved theme does not flash the system one.
+  try { var t = localStorage.getItem("annotate-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+</script>
 <style>
   :root {
-    --bg: #fbfaf7;
-    --surface: #ffffff;
-    --text: #1d1c1a;
-    --muted: #63605a;
-    --border: #e4e1da;
-    --accent: #0f766e;
+    /* Each colour is light-dark(light, dark): the theme switch only flips color-scheme. */
+    color-scheme: light dark;
+    --bg: light-dark(#f5f2ea, #0d0d0c);
+    --surface: light-dark(#ffffff, #1a1917);
+    --text: light-dark(#161513, #f4f3ef);
+    --muted: light-dark(#55524b, #b5b2aa);
+    --border: light-dark(#d6d1c4, #383531);
+    --accent: light-dark(#0f766e, #5eead4);
     --mark: #fde047;
-    --ink: #1d1c1a;
-    --accent-soft: #fef9c3;
-    --code-bg: #f3f1ec;
+    --ink: #161513;
+    --accent-soft: light-dark(#fef3a8, #3d360f);
+    --code-bg: light-dark(#ebe7dc, #262421);
+    --dot: light-dark(rgb(22 21 19 / .1), rgb(255 255 255 / .07));
+    --glow: light-dark(rgb(253 224 71 / .6), rgb(253 224 71 / .14));
     --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
     --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --bg: #141413;
-      --surface: #1c1b19;
-      --text: #ecebe7;
-      --muted: #a4a19a;
-      --border: #2f2d2a;
-      --accent: #5eead4;
-      --accent-soft: #3a3410;
-      --code-bg: #22211e;
-    }
-  }
+  :root[data-theme="light"] { color-scheme: light; }
+  :root[data-theme="dark"] { color-scheme: dark; }
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
   body {
     margin: 0;
-    background: var(--bg);
+    /* A highlighter glow behind the hero over a dot grid. */
+    background:
+      radial-gradient(900px 440px at 50% -140px, var(--glow), transparent 70%) no-repeat,
+      radial-gradient(var(--dot) 1px, transparent 1px) 0 0 / 22px 22px,
+      var(--bg);
     color: var(--text);
     font: 16px/1.6 var(--sans);
   }
@@ -66,7 +68,7 @@
     padding: 20px 0; gap: 12px;
   }
   .brand { font: 600 18px var(--mono); color: var(--text); text-decoration: none; }
-  .top nav { display: flex; align-items: center; gap: 16px; font-size: 15px; }
+  .top nav { display: flex; align-items: center; gap: 12px; font-size: 15px; }
   .top nav a { color: var(--muted); text-decoration: none; }
   .top nav a:hover { color: var(--text); }
   .lang-switch {
@@ -76,32 +78,34 @@
 
   .hero { padding: 40px 0 24px; }
   .hero h1 { font-size: clamp(30px, 6vw, 46px); line-height: 1.15; margin: 0 0 16px; letter-spacing: -0.02em; }
+  mark { background: var(--mark); color: var(--ink); padding: 0 .15em; border-radius: 6px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
   .hero p { font-size: 19px; color: var(--muted); margin: 0 0 24px; max-width: 640px; }
   .cta { display: flex; flex-wrap: wrap; gap: 12px; }
   .btn {
     display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none;
     font-weight: 600; font-size: 15px; border: 1px solid var(--border); color: var(--text); background: var(--surface);
   }
-  .btn.primary { background: var(--mark); border-color: var(--ink); color: var(--ink); }
+  .btn.primary { background: var(--mark); border-color: var(--ink); color: var(--ink); box-shadow: 3px 3px 0 var(--text); }
   .btn, .lang-switch { min-height: 44px; display: inline-flex; align-items: center; }
   a:focus-visible, button:focus-visible, input:focus-visible, [data-pick]:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
   .skip { position: absolute; left: -999px; }
   .skip:focus { left: 16px; top: 8px; background: var(--surface); padding: 8px 12px; z-index: 1; }
 
-  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 14px 30px -20px rgb(0 0 0 / .45); }
   .demo { margin: 32px 0 8px; overflow: hidden; }
   .demo-head { padding: 10px 16px; font-size: 14px; color: var(--muted); border-bottom: 1px solid var(--border); }
   pre.block {
-    margin: 0; padding: 20px; overflow-x: auto; font: 14px/1.7 var(--mono); background: var(--code-bg);
+    margin: 0; padding: 20px; overflow: auto; max-height: 340px; font: 14px/1.7 var(--mono); background: var(--code-bg);
   }
   .demo-foot { padding: 10px 16px; font-size: 14px; color: var(--muted); border-top: 1px solid var(--border); }
   .demo-foot code { font-size: 13px; }
   .note { font-size: 15px; color: var(--muted); margin: 12px 0 0; }
 
   section { padding: 40px 0 8px; }
-  h2 { font-size: 26px; margin: 0 0 16px; letter-spacing: -0.01em; }
+  h2 { font-size: 26px; margin: 0 0 16px; letter-spacing: -0.01em; display: flex; align-items: center; gap: 10px; }
+  h2::before { content: ""; flex: none; width: 10px; height: 22px; border-radius: 3px; background: var(--mark); box-shadow: 0 0 0 1.5px var(--text); }
   .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
-  .feature { padding: 18px; }
+  .feature { padding: 18px; border-top: 3px solid var(--mark); }
   .feature h3 { margin: 0 0 6px; font-size: 17px; }
   .feature p { margin: 0; color: var(--muted); font-size: 15px; }
 
@@ -110,7 +114,7 @@
   ol.steps li::before {
     content: counter(step); position: absolute; left: 0; top: 0;
     width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
-    background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 15px;
+    background: var(--mark); color: var(--ink); font-weight: 700; font-size: 15px; box-shadow: 0 0 0 1.5px var(--text);
   }
   ol.steps p { margin: 2px 0 8px; }
   code { font-family: var(--mono); font-size: 0.92em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
@@ -141,6 +145,12 @@
   .mock button { font: inherit; color: inherit; background: none; border: 0; text-align: left; justify-self: start; }
   .mock .m-title { font-size: 22px; font-weight: 700; letter-spacing: -0.01em; }
   .mock .m-text { color: var(--muted); max-width: 520px; }
+  .mock .m-nav { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; padding-bottom: 12px; border-bottom: 1px solid var(--border); }
+  .mock .m-logo { font-weight: 800; margin-right: auto; }
+  .mock .m-link { color: var(--muted); font-size: 15px; }
+  .mock .m-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin-top: 8px; }
+  .mock .m-card { display: grid; gap: 2px; justify-self: stretch; padding: 12px; border: 1px solid var(--border); background: var(--bg); }
+  .mock .m-card span { color: var(--muted); font-size: 14px; }
   .mock button.fake-btn {
     padding: 8px 16px; border: 1px solid var(--border); background: var(--code-bg); font-weight: 600; font-size: 15px;
   }
@@ -167,12 +177,13 @@
       <a class="hide-sm" href="#privacy" data-i18n="nav_privacy">Privacy</a>
       <a href="https://github.com/codecruz/annotate">GitHub</a>
       <button class="lang-switch" id="lang-switch" type="button" aria-label="Español">ES</button>
+      <button class="lang-switch" id="theme-switch" type="button"></button>
     </nav>
   </header>
 
   <main id="main">
   <div class="hero">
-    <h1 data-i18n="hero_title">Point at your page, write the change, let Claude do it</h1>
+    <h1 data-i18n="hero_title">Point at your page, write the change, <mark>let Claude do it</mark></h1>
     <p data-i18n="hero_text">annotate is a Claude Code plugin. It puts an annotation layer over the site you are running locally: click an element, leave a note, and Claude finds the code behind it and makes the change.</p>
     <div class="cta">
       <a class="btn primary" href="#install" data-i18n="cta_install">Install it</a>
@@ -183,16 +194,26 @@
   <div class="card demo" aria-label="Annotation demo">
     <div class="demo-head" data-i18n="demo_head">Try it: click any part of this sample page and leave a note.</div>
     <div class="mock" id="mock">
+      <div class="m-nav">
+        <button type="button" class="m-logo" data-pick="nav > a.logo" data-tag="a">Miga Bakery</button>
+        <button type="button" class="m-link" data-pick="nav > a:nth-of-type(2)" data-tag="a">Menu</button>
+        <button type="button" class="m-link" data-pick="nav > a:nth-of-type(3)" data-tag="a">Visit us</button>
+      </div>
       <button type="button" class="m-title" data-pick="h3">Fresh bread, every morning</button>
       <button type="button" class="m-text" data-pick="p">We bake from 5 am and deliver before 8. Order by midnight for next-day delivery anywhere in the city.</button>
       <button type="button" class="fake-btn" data-pick="a">Order now</button>
+      <div class="m-cards">
+        <button type="button" class="m-card" data-pick="ul > li:nth-of-type(1)" data-tag="li"><b>Sourdough loaf</b> <span>€4.50</span></button>
+        <button type="button" class="m-card" data-pick="ul > li:nth-of-type(2)" data-tag="li"><b>Seeded rye</b> <span>€5.20</span></button>
+        <button type="button" class="m-card" data-pick="ul > li:nth-of-type(3)" data-tag="li"><b>Butter croissant</b> <span>€2.10</span></button>
+      </div>
     </div>
     <form class="note-form" id="note-form" hidden>
       <label for="note-input"><span data-i18n="demo_label">Note for</span> <code id="note-label"></code></label>
       <input id="note-input" type="text" autocomplete="off" required>
       <button class="btn primary" data-i18n="demo_save">Save</button>
     </form>
-    <pre class="block" id="block"></pre>
+    <pre class="block" id="block" tabindex="0" aria-label=".annotations.json"></pre>
     <div class="demo-foot" data-i18n="demo_foot">This is what Claude reads: <code>.annotations.json</code> in your project.</div>
   </div>
   <p class="note" data-i18n="measures"><strong>What a note carries:</strong> the page, the element and its text, the window size and the colour theme. “Too big on mobile” arrives with its context.</p>
@@ -232,7 +253,7 @@
     <ol class="steps">
       <li>
         <p data-i18n="s1">Install the plugin. In Claude Code:</p>
-        <pre class="cmd">/plugin marketplace add codecruz/claude-plugins
+        <pre class="cmd" tabindex="0">/plugin marketplace add codecruz/claude-plugins
 /plugin install annotate@codecruz</pre>
         <p class="note" data-i18n="s1_note">Then start a new session, or run <code>/reload-plugins</code>.</p>
       </li>
@@ -245,7 +266,7 @@
         <p data-i18n="s3">Open the address Claude gives you. Press <strong>Annotate</strong>, click an element, write the note and save. Repeat on any page.</p>
       </li>
       <li>
-        <p data-i18n="s4">Apply the notes. Claude makes each change and reports note by note.</p>
+        <p data-i18n="s4">Press <strong>Send to Claude</strong> on the page, or run the command. Claude makes each change and reports note by note.</p>
         <pre class="cmd">/annotate:apply</pre>
         <p class="note" data-i18n="s4_note">Close the session with <code>/annotate:stop</code>. Open notes are kept for next time.</p>
       </li>
@@ -256,7 +277,7 @@
     <h2 data-i18n="privacy_title">Privacy</h2>
     <ul class="plain">
       <li data-i18n="p1">Everything stays on your computer. The notes live in <code>.annotations.json</code>, inside your project.</li>
-      <li data-i18n="p2">The helper only listens on <code>127.0.0.1</code> and only forwards to <code>localhost</code>. <strong>It cannot be pointed at a public site.</strong></li>
+      <li data-i18n="p2">The proxy that Claude starts only listens on <code>127.0.0.1</code> and only forwards to <code>localhost</code>. <strong>It cannot be pointed at a public site.</strong></li>
       <li data-i18n="p3">Your project files are not changed by the layer: it is added to the pages on the fly, only while the session is open.</li>
       <li data-i18n="p4">No accounts, no network calls, no analytics.</li>
     </ul>
@@ -273,7 +294,17 @@
 
 <script>
 (function () {
-  var notes = [{ selector: "#mock > a", text: "Order now", note: "Make this button the accent colour" }];
+  function theme() {
+    return document.documentElement.dataset.theme || (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+  }
+  // The same fields a real note carries.
+  function make(selector, tag, text, note) {
+    return { path: "/", selector: selector, tag: tag, text: text, viewport: innerWidth + "x" + innerHeight, theme: theme(), note: note };
+  }
+  var notes = [
+    make("#mock > a", "a", "Order now", "Make this button the accent colour"),
+    make("#mock > ul > li:nth-of-type(3)", "li", "Butter croissant €2.10", "Sold out today: grey this card out")
+  ];
   var form = document.getElementById("note-form");
   var input = document.getElementById("note-input");
   var label = document.getElementById("note-label");
@@ -298,7 +329,7 @@
   function pick(el) {
     target = el;
     var existing = notes.find(function (n) { return n.selector === selectorOf(el); });
-    label.textContent = "<" + el.dataset.pick + ">";
+    label.textContent = "<" + (el.dataset.tag || el.dataset.pick) + ">";
     input.value = existing ? existing.note : "";
     form.hidden = false;
     input.focus();
@@ -310,9 +341,10 @@
     e.preventDefault();
     var selector = selectorOf(target);
     var pin = target.querySelector(".pin");
-    var text = target.textContent.replace(pin ? pin.textContent : "", "").trim().slice(0, 60);
+    // Without the pin's number, which is a child of the element.
+    var text = Array.prototype.map.call(target.childNodes, function (n) { return n === pin ? "" : n.textContent; }).join("").trim().slice(0, 60);
     notes = notes.filter(function (n) { return n.selector !== selector; });
-    notes.push({ selector: selector, text: text, note: input.value.trim() });
+    notes.push(make(selector, target.dataset.tag || target.dataset.pick, text, input.value.trim()));
     form.hidden = true;
     render();
   });
@@ -323,7 +355,7 @@
     demo_label: "Nota para",
     nav_install: "Instalar",
     nav_privacy: "Privacidad",
-    hero_title: "Señala en tu página, escribe el cambio y deja que Claude lo haga",
+    hero_title: "Señala en tu página, escribe el cambio y <mark>deja que Claude lo haga</mark>",
     hero_text: "annotate es un plugin de Claude Code. Pone una capa de anotación sobre la web que tienes en local: haz clic en un elemento, deja una nota y Claude encuentra el código que hay detrás y hace el cambio.",
     cta_install: "Instálalo",
     cta_docs: "Lee la documentación",
@@ -350,11 +382,11 @@
     s2: "Sirve tu proyecto en local como siempre y abre una sesión:",
     s2_note: "O dilo sin más: «Quiero anotar la web».",
     s3: "Abre la dirección que te da Claude. Pulsa <strong>Anotar</strong>, haz clic en un elemento, escribe la nota y guarda. Repite en cualquier página.",
-    s4: "Aplica las notas. Claude hace cada cambio y te informa nota por nota.",
+    s4: "Pulsa <strong>Enviar a Claude</strong> en la página, o ejecuta el comando. Claude hace cada cambio y te informa nota por nota.",
     s4_note: "Cierra la sesión con <code>/annotate:stop</code>. Las notas abiertas se guardan para la próxima vez.",
     privacy_title: "Privacidad",
     p1: "Todo se queda en tu ordenador. Las notas viven en <code>.annotations.json</code>, dentro de tu proyecto.",
-    p2: "El programa auxiliar solo escucha en <code>127.0.0.1</code> y solo reenvía a <code>localhost</code>. <strong>No se puede apuntar a una web pública.</strong>",
+    p2: "El proxy que abre Claude solo escucha en <code>127.0.0.1</code> y solo reenvía a <code>localhost</code>. <strong>No se puede apuntar a una web pública.</strong>",
     p3: "La capa no cambia los archivos de tu proyecto: se añade a las páginas al vuelo, solo mientras la sesión está abierta.",
     p4: "Sin cuentas, sin llamadas de red, sin analítica.",
     footer_license: "Licencia MIT · Hecho para Claude Code"
@@ -377,7 +409,24 @@
       ? "https://github.com/codecruz/annotate/blob/main/README.es.md"
       : "https://github.com/codecruz/annotate#readme";
     try { localStorage.setItem("annotate-lang", lang); } catch (e) {}
+    paintTheme();
   }
+
+  // No saved choice: the page follows the system theme through color-scheme.
+  var themeSwitch = document.getElementById("theme-switch");
+  function paintTheme() {
+    var dark = theme() === "dark", es = document.documentElement.lang === "es";
+    themeSwitch.textContent = dark ? "☀" : "☾";
+    themeSwitch.setAttribute("aria-label", dark ? (es ? "Tema claro" : "Light theme") : (es ? "Tema oscuro" : "Dark theme"));
+    themeSwitch.title = themeSwitch.getAttribute("aria-label");
+  }
+  themeSwitch.addEventListener("click", function () {
+    var next = theme() === "dark" ? "light" : "dark";
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem("annotate-theme", next); } catch (e) {}
+    paintTheme();
+  });
+  paintTheme();
   var saved = null;
   try { saved = localStorage.getItem("annotate-lang"); } catch (e) {}
   var initial = saved || (/^es\b/i.test(navigator.language || "") ? "es" : "en");

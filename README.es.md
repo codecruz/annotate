@@ -27,7 +27,8 @@ Después abre una sesión nueva o ejecuta `/reload-plugins`.
 2. Ejecuta `/annotate:start`, o simplemente pídelo («quiero anotar la web»).
 3. Abre la dirección que te da Claude, pulsa **Anotar**, haz clic en un
    elemento y escribe la nota. Repite en cualquier página.
-4. Ejecuta `/annotate:apply`, o dile a Claude que has terminado. Busca el
+4. Pulsa **Enviar a Claude** en la página, ejecuta `/annotate:apply`, o dile
+   a Claude que has terminado. Busca el
    código de cada elemento marcado, hace el cambio y borra la nota. Los pines
    que quedan son trabajo pendiente.
 
@@ -71,6 +72,7 @@ quedan pines, no queda nada pendiente.
 | **Guardar** (`Ctrl+Enter`) | Guarda la nota. Las notas se escriben en disco con cada cambio. |
 | **Notas** | Lista todas las notas, de cualquier página. Edítalas, bórralas o cópialas todas. |
 | Un pin | Vuelve a abrir su nota. |
+| **Enviar a Claude** | Le dice a Claude que empiece con las notas, sin volver al chat. |
 | **⇄** | Pasa la barra a la otra esquina cuando tapa algo. |
 | `Esc` | Cancela. |
 
@@ -119,15 +121,19 @@ node skills/annotate/server.mjs --proxy http://localhost:<puerto-de-tu-web>
 
 Anota y después indica al asistente el archivo de notas, o abre **Notas** y
 pulsa **Copiar notas como texto** para obtener un resumen en Markdown que
-puedes pegar en cualquier chat.
+puedes pegar en cualquier chat. `node skills/annotate/wait.mjs [puerto]`
+se queda esperando hasta que pulsas **Enviar a Claude** y entonces imprime
+`apply`: un asistente que ejecute comandos en segundo plano puede usarlo
+como señal.
 
 ## Privacidad y seguridad
 
 - Todo se queda en tu ordenador. Sin cuentas, sin llamadas de red, sin
   analítica.
 - El proxy solo escucha en `127.0.0.1` y solo reenvía a `localhost`.
-- Solo acepta notas de las páginas que él mismo sirve, así que otra web
-  abierta en tu navegador no puede colar una.
+- Solo acepta notas y la señal de **Enviar a Claude** de las páginas que él
+  mismo sirve, así que otra web abierta en tu navegador no puede colar una
+  nota ni arrancar el trabajo.
 - La capa no cambia los archivos de tu proyecto: se añade a las páginas al
   vuelo, solo mientras la sesión está abierta.
 

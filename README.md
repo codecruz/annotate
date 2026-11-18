@@ -27,7 +27,8 @@ Then start a new session, or run `/reload-plugins`.
 2. Run `/annotate:start`, or just ask ("let me annotate the page").
 3. Open the address Claude gives you, press **Annotate**, click an element
    and write the note. Repeat on any page.
-4. Run `/annotate:apply`, or tell Claude you are done. It finds the source of
+4. Press **Send to Claude** on the page, run `/annotate:apply`, or tell
+   Claude you are done. It finds the source of
    each marked element, makes the change and removes the note. Pins that
    remain are pending work.
 
@@ -70,6 +71,7 @@ pins left means nothing is pending.
 | **Save** (`Ctrl+Enter`) | Saves the note. Notes are written to disk on every change. |
 | **Notes** | Lists every note, on any page. Edit, delete, or copy them all. |
 | A pin | Reopens its note. |
+| **Send to Claude** | Tells Claude to start on the notes, without going back to the chat. |
 | **⇄** | Moves the bar to the other corner when it covers something. |
 | `Esc` | Cancels. |
 
@@ -117,15 +119,18 @@ node skills/annotate/server.mjs --proxy http://localhost:<site-port>
 
 Annotate, then either point the assistant at the notes file, or open
 **Notes** and press **Copy notes as text** to get a Markdown brief you can
-paste into any chat.
+paste into any chat. `node skills/annotate/wait.mjs [port]` blocks until
+**Send to Claude** is pressed and then prints `apply`: an assistant that
+runs background commands can use it as its cue.
 
 ## Privacy and safety
 
 - Everything stays on your computer. No accounts, no network calls, no
   analytics.
 - The proxy only listens on `127.0.0.1` and only forwards to `localhost`.
-- Notes are accepted only from the pages the proxy serves, so another site
-  open in your browser cannot plant one.
+- Notes and the **Send to Claude** signal are accepted only from the pages
+  the proxy serves, so another site open in your browser cannot plant a
+  note or start the work.
 - Your project files are not changed by the layer: it is added to the pages
   on the fly, only while the session is open.
 
