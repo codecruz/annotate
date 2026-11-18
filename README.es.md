@@ -115,6 +115,7 @@ node skills/annotate/server.mjs --proxy http://localhost:<puerto-de-tu-web>
 | `--proxy` | obligatoria | La web local que quieres anotar. Solo se acepta `localhost`. |
 | `--port` | `4400` | Dónde se sirve la copia anotable. |
 | `--out` | `.annotations.json` | El archivo de notas, relativo a la carpeta actual. |
+| `--open` | desactivada | Abre la copia anotable en tu navegador por defecto, en primer plano. |
 
 Anota y después indica al asistente el archivo de notas, o abre **Notas** y
 pulsa **Copiar notas como texto** para obtener un resumen en Markdown que

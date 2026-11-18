@@ -1,6 +1,6 @@
 {
   "name": "annotate",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Annotate your locally running site in the browser: click an element, leave a note, and Claude carries out the notes.",
   "author": {
     "name": "codecruz",

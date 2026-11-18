@@ -113,6 +113,7 @@ node skills/annotate/server.mjs --proxy http://localhost:<site-port>
 | `--proxy` | required | The local site to annotate. Only `localhost` is accepted. |
 | `--port` | `4400` | Where the annotated copy is served. |
 | `--out` | `.annotations.json` | The notes file, relative to the current folder. |
+| `--open` | off | Opens the annotated copy in your default browser, in the foreground. |
 
 Annotate, then either point the assistant at the notes file, or open
 **Notes** and press **Copy notes as text** to get a Markdown brief you can

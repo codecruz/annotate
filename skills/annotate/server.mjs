@@ -1,7 +1,8 @@
 #!/usr/bin/env node
 // Annotation proxy: serves a local site through itself, injects the overlay
 // (client.js) into every HTML page and stores the notes in a JSON file.
-// usage: node server.mjs --proxy http://localhost:4321 [--port 4400] [--out .annotations.json]
+// usage: node server.mjs --proxy http://localhost:4321 [--port 4400] [--out .annotations.json] [--open]
+import { spawn } from "node:child_process";
 import { createServer } from "node:http";
 import { readFile, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -11,7 +12,7 @@ const args = Object.fromEntries(
 );
 const upstream = (args.proxy ?? "").replace(/\/$/, "");
 if (!/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(upstream)) {
-  console.error("usage: node server.mjs --proxy http://localhost:<port> [--port 4400] [--out .annotations.json]");
+  console.error("usage: node server.mjs --proxy http://localhost:<port> [--port 4400] [--out .annotations.json] [--open]");
   process.exit(1);
 }
 const port = Number(args.port ?? 4400);
@@ -94,4 +95,11 @@ createServer(async (req, res) => {
 }).listen(port, "127.0.0.1", () => {
   console.log(`annotate: http://localhost:${port} -> ${upstream}`);
   console.log(`notes: ${out}`);
+  if ("open" in args) {
+    // The OS opener, not a browser binary: it is what raises the browser window to the foreground.
+    const [cmd, ...pre] = { darwin: ["open"], win32: ["cmd", "/c", "start", ""] }[process.platform] ?? ["xdg-open"];
+    spawn(cmd, [...pre, `http://localhost:${port}/`], { stdio: "ignore", detached: true })
+      .on("error", () => {}) // no opener (headless, SSH): the URL is printed above
+      .unref();
+  }
 });

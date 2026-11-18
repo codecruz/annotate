@@ -15,16 +15,19 @@ change. You read the notes and do the work.
 2. Start the proxy in the background, from the project root:
 
    ```bash
-   node "<this skill's base directory>/server.mjs" --proxy http://localhost:<site-port> --port 4400 --out .annotations.json
+   node "<this skill's base directory>/server.mjs" --proxy http://localhost:<site-port> --port 4400 --out .annotations.json --open
    ```
 
    `server.mjs` sits next to this file. It needs Node 20 or later and has no
    dependencies.
 
    `--proxy` only accepts localhost. Pick another `--port` if 4400 is busy.
+   `--open` opens the page in the user's default browser and brings it to
+   the foreground; do not open it yourself as well.
 3. Keep the notes out of git without touching the repo's `.gitignore`:
    add `.annotations.json` to `.git/info/exclude` if it is not there.
-4. Give the user the URL (`http://localhost:4400/...`) and how it works:
+4. Give the user the URL (`http://localhost:4400/...`), in case the browser
+   did not open, and how it works:
    - **Annotate** (or Alt+A), then click an element. With the keyboard: the
      arrow keys move through the page structure and Enter picks.
    - Write the note and **Save** (Ctrl+Enter). **Widen to the container**
