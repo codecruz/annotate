@@ -12,12 +12,17 @@ When you are done, Claude reads the file and does the work.
 
 ## How it works
 
-1. Ask Claude to open an annotation session ("quiero anotar la web",
-   "let me annotate the page").
+1. Run `/annotate:start`, or just ask ("let me annotate the page").
 2. Open the URL it gives you, press **Annotate**, click an element and write
    the note. Numbered pins mark your notes; **Notes** lists them across pages.
-3. Tell Claude you are done. It finds the source of each marked element,
+3. Run `/annotate:apply`, or tell Claude you are done. It finds the source of each marked element,
    makes the change and removes the note. Pins that remain are pending work.
+
+| Command | What it does |
+| --- | --- |
+| `/annotate:start [url or port]` | Opens a session on your local site. |
+| `/annotate:apply` | Carries out the notes and removes the resolved ones. |
+| `/annotate:stop` | Closes the session. Open notes are kept. |
 
 Each note records the page, a selector, the element's text and HTML, the
 viewport size and the colour theme, so "this is too big on mobile" carries

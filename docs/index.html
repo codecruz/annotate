@@ -237,15 +237,17 @@
         <p class="note" data-i18n="s1_note">Then start a new session, or run <code>/reload-plugins</code>.</p>
       </li>
       <li>
-        <p data-i18n="s2">Serve your project locally as you always do, and ask Claude:</p>
-        <pre class="cmd" data-i18n="s2_cmd">I want to annotate the site</pre>
+        <p data-i18n="s2">Serve your project locally as you always do, and open a session:</p>
+        <pre class="cmd">/annotate:start</pre>
+        <p class="note" data-i18n="s2_note">Or just say it: “I want to annotate the site”.</p>
       </li>
       <li>
         <p data-i18n="s3">Open the address Claude gives you. Press <strong>Annotate</strong>, click an element, write the note and save. Repeat on any page.</p>
       </li>
       <li>
-        <p data-i18n="s4">Tell Claude you are done. It makes each change and reports note by note.</p>
-        <pre class="cmd" data-i18n="s4_cmd">Done, apply my notes</pre>
+        <p data-i18n="s4">Apply the notes. Claude makes each change and reports note by note.</p>
+        <pre class="cmd">/annotate:apply</pre>
+        <p class="note" data-i18n="s4_note">Close the session with <code>/annotate:stop</code>. Open notes are kept for next time.</p>
       </li>
     </ol>
   </section>
@@ -345,11 +347,11 @@
     install_title: "Empieza",
     s1: "Instala el plugin. En Claude Code:",
     s1_note: "Después abre una sesión nueva o ejecuta <code>/reload-plugins</code>.",
-    s2: "Sirve tu proyecto en local como siempre y pídeselo a Claude:",
-    s2_cmd: "Quiero anotar la web",
+    s2: "Sirve tu proyecto en local como siempre y abre una sesión:",
+    s2_note: "O dilo sin más: «Quiero anotar la web».",
     s3: "Abre la dirección que te da Claude. Pulsa <strong>Anotar</strong>, haz clic en un elemento, escribe la nota y guarda. Repite en cualquier página.",
-    s4: "Dile a Claude que has terminado. Hace cada cambio y te informa nota por nota.",
-    s4_cmd: "Listo, aplica mis notas",
+    s4: "Aplica las notas. Claude hace cada cambio y te informa nota por nota.",
+    s4_note: "Cierra la sesión con <code>/annotate:stop</code>. Las notas abiertas se guardan para la próxima vez.",
     privacy_title: "Privacidad",
     p1: "Todo se queda en tu ordenador. Las notas viven en <code>.annotations.json</code>, dentro de tu proyecto.",
     p2: "El programa auxiliar solo escucha en <code>127.0.0.1</code> y solo reenvía a <code>localhost</code>. <strong>No se puede apuntar a una web pública.</strong>",

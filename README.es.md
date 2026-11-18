@@ -12,12 +12,18 @@ Cuando terminas, Claude lee el archivo y hace el trabajo.
 
 ## Cómo funciona
 
-1. Pide a Claude que abra una sesión de anotación ("quiero anotar la web").
+1. Ejecuta `/annotate:start`, o simplemente pídelo ("quiero anotar la web").
 2. Abre la dirección que te da, pulsa **Anotar**, haz clic en un elemento y
    escribe la nota. Los pines numerados marcan tus notas; **Notas** las lista
    todas, también las de otras páginas.
-3. Dile a Claude que has terminado. Busca el código de cada elemento marcado,
+3. Ejecuta `/annotate:apply`, o dile a Claude que has terminado. Busca el código de cada elemento marcado,
    hace el cambio y borra la nota. Los pines que quedan son trabajo pendiente.
+
+| Comando | Qué hace |
+| --- | --- |
+| `/annotate:start [url o puerto]` | Abre una sesión sobre tu web local. |
+| `/annotate:apply` | Aplica las notas y borra las resueltas. |
+| `/annotate:stop` | Cierra la sesión. Las notas abiertas se conservan. |
 
 Cada nota guarda la página, un selector, el texto y el HTML del elemento, el
 tamaño de la ventana y el tema de color, para que «esto es demasiado grande
