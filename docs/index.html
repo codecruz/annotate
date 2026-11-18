@@ -76,6 +76,10 @@
     border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; cursor: pointer;
   }
 
+  /* Drawn icons, not ☀/☾ glyphs: those sit off-centre in most fonts. */
+  #theme-switch { width: 44px; padding: 0; justify-content: center; }
+  #theme-switch svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
   .hero { padding: 40px 0 24px; }
   .hero h1 { font-size: clamp(30px, 6vw, 46px); line-height: 1.15; margin: 0 0 16px; letter-spacing: -0.02em; }
   mark { background: var(--mark); color: var(--ink); padding: 0 .15em; border-radius: 6px; -webkit-box-decoration-break: clone; box-decoration-break: clone; }
@@ -277,7 +281,7 @@
     <h2 data-i18n="privacy_title">Privacy</h2>
     <ul class="plain">
       <li data-i18n="p1">Everything stays on your computer. The notes live in <code>.annotations.json</code>, inside your project.</li>
-      <li data-i18n="p2">The proxy that Claude starts only listens on <code>127.0.0.1</code> and only forwards to <code>localhost</code>. <strong>It cannot be pointed at a public site.</strong></li>
+      <li data-i18n="p2">The proxy that Claude starts is only reachable from your own computer, at <code>localhost</code> (<code>127.0.0.1</code>), and only forwards to a site that is also on <code>localhost</code>. <strong>It cannot be pointed at a public site.</strong></li>
       <li data-i18n="p3">Your project files are not changed by the layer: it is added to the pages on the fly, only while the session is open.</li>
       <li data-i18n="p4">No accounts, no network calls, no analytics.</li>
     </ul>
@@ -386,7 +390,7 @@
     s4_note: "Cierra la sesión con <code>/annotate:stop</code>. Las notas abiertas se guardan para la próxima vez.",
     privacy_title: "Privacidad",
     p1: "Todo se queda en tu ordenador. Las notas viven en <code>.annotations.json</code>, dentro de tu proyecto.",
-    p2: "El proxy que abre Claude solo escucha en <code>127.0.0.1</code> y solo reenvía a <code>localhost</code>. <strong>No se puede apuntar a una web pública.</strong>",
+    p2: "El proxy que abre Claude solo es accesible desde tu propio ordenador, en <code>localhost</code> (<code>127.0.0.1</code>), y solo reenvía a una web que también esté en <code>localhost</code>. <strong>No se puede apuntar a una web pública.</strong>",
     p3: "La capa no cambia los archivos de tu proyecto: se añade a las páginas al vuelo, solo mientras la sesión está abierta.",
     p4: "Sin cuentas, sin llamadas de red, sin analítica.",
     footer_license: "Licencia MIT · Hecho para Claude Code"
@@ -416,7 +420,9 @@
   var themeSwitch = document.getElementById("theme-switch");
   function paintTheme() {
     var dark = theme() === "dark", es = document.documentElement.lang === "es";
-    themeSwitch.textContent = dark ? "☀" : "☾";
+    themeSwitch.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true">' + (dark
+      ? '<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>'
+      : '<path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/>') + "</svg>";
     themeSwitch.setAttribute("aria-label", dark ? (es ? "Tema claro" : "Light theme") : (es ? "Tema oscuro" : "Dark theme"));
     themeSwitch.title = themeSwitch.getAttribute("aria-label");
   }
