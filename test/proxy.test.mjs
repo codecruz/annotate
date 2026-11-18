@@ -5,6 +5,10 @@ import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { after, before, test } from "node:test";
+import { fileURLToPath } from "node:url";
+
+// fileURLToPath, not URL.pathname: on Windows the latter is "/D:/…".
+const SERVER = fileURLToPath(new URL("../skills/annotate/server.mjs", import.meta.url));
 
 const PORT = 4471;
 const base = `http://localhost:${PORT}`;
@@ -18,10 +22,14 @@ before(async () => {
   await new Promise((done) => upstream.listen(0, "127.0.0.1", done));
   out = join(await mkdtemp(join(tmpdir(), "annotate-")), "notes.json");
   proxy = spawn("node", [
-    new URL("../skills/annotate/server.mjs", import.meta.url).pathname,
+    SERVER,
     "--proxy", `http://localhost:${upstream.address().port}`, "--port", String(PORT), "--out", out,
   ]);
-  await new Promise((done) => proxy.stdout.once("data", done));
+  // Fail instead of hanging if the proxy never starts.
+  await new Promise((done, fail) => {
+    proxy.stdout.once("data", done);
+    proxy.once("exit", (code) => fail(new Error(`proxy exited with ${code}`)));
+  });
 });
 
 after(() => {
@@ -58,6 +66,6 @@ test("refuses notes from another site and requests for another host", async () =
 });
 
 test("refuses to proxy anything that is not localhost", async () => {
-  const child = spawn("node", [new URL("../skills/annotate/server.mjs", import.meta.url).pathname, "--proxy", "https://example.com"]);
+  const child = spawn("node", [SERVER, "--proxy", "https://example.com"]);
   assert.equal(await new Promise((done) => child.once("exit", done)), 1);
 });
