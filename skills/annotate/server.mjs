@@ -38,8 +38,19 @@ const body = async (req) => {
   return Buffer.concat(chunks);
 };
 
+// Notes become instructions for an AI, so only this page may write them: a
+// request must name this server as its host (blocks DNS rebinding) and a
+// write must come from a page it served (blocks other sites posting notes).
+const hosts = new Set([`localhost:${port}`, `127.0.0.1:${port}`]);
+const trusted = (req) =>
+  hosts.has(req.headers.host) && (req.method !== "POST" || req.headers.origin === `http://${req.headers.host}`);
+
 createServer(async (req, res) => {
   try {
+    if (!trusted(req)) {
+      res.writeHead(403, { "content-type": "text/plain; charset=utf-8" });
+      return res.end("annotate: request refused");
+    }
     if (req.url === "/__annotate/client.js") {
       res.writeHead(200, { "content-type": "text/javascript; charset=utf-8", "cache-control": "no-store" });
       return res.end(await readFile(client));

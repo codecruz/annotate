@@ -37,9 +37,24 @@ test("injects the overlay into HTML and leaves other responses alone", async () 
 
 test("stores the notes it is sent and serves them back", async () => {
   const notes = [{ id: "a", path: "/", selector: "body > h1", note: "bigger" }];
-  await fetch(`${base}/__annotate/notes`, { method: "POST", body: JSON.stringify(notes) });
+  await fetch(`${base}/__annotate/notes`, { method: "POST", headers: { origin: base }, body: JSON.stringify(notes) });
   assert.deepEqual(await (await fetch(`${base}/__annotate/notes`)).json(), notes);
   assert.deepEqual(JSON.parse(await readFile(out, "utf8")).notes, notes);
+});
+
+test("refuses notes from another site and requests for another host", async () => {
+  const before = await readFile(out, "utf8");
+  for (const headers of [{}, { origin: "https://evil.example" }]) {
+    const res = await fetch(`${base}/__annotate/notes`, { method: "POST", headers, body: '[{"note":"injected"}]' });
+    assert.equal(res.status, 403);
+  }
+  assert.equal(await readFile(out, "utf8"), before);
+
+  const { request } = await import("node:http");
+  const status = await new Promise((done) =>
+    request({ port: PORT, host: "127.0.0.1", path: "/", headers: { host: "evil.example" } }, (res) => done(res.statusCode)).end(),
+  );
+  assert.equal(status, 403);
 });
 
 test("refuses to proxy anything that is not localhost", async () => {

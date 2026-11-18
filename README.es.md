@@ -57,6 +57,8 @@ Después abre una sesión nueva o ejecuta `/reload-plugins`.
 
 - Node 18 o superior. Sin dependencias.
 - El proxy solo reenvía a `localhost` y solo escucha en `127.0.0.1`.
+  Solo acepta notas de las páginas que él mismo sirve, así que otra web
+  abierta en tu navegador no puede colar una.
 - Las notas se ponen sobre elementos, no sobre zonas libres ni texto
   seleccionado.
 - No reenvía WebSockets, así que la recarga en caliente no funciona a través
