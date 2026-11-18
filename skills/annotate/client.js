@@ -1,64 +1,94 @@
-// Overlay injected by server.mjs. Pick an element, write a note; every
-// change is saved to the notes file through POST /__annotate/notes.
+// Overlay injected by server.mjs. Pick an element (mouse, touch or keyboard),
+// write a note; every change is saved through POST /__annotate/notes.
 (() => {
   if (window.__annotate) return;
   window.__annotate = true;
 
   const es = navigator.language.startsWith("es");
   const T = es
-    ? { annotate: "Anotar", pick: "Elige un elemento (Esc)", notes: "Notas", note: "Nota", hint: "Qué cambiar aquí…", del: "Borrar",
-        cancel: "Cancelar", save: "Guardar", empty: "Sin notas. Pulsa «Anotar» y haz clic en un elemento.", view: "Ver", go: "Ir a la página" }
-    : { annotate: "Annotate", pick: "Pick an element (Esc)", notes: "Notes", note: "Note", hint: "What to change here…", del: "Delete",
-        cancel: "Cancel", save: "Save", empty: "No notes yet. Press “Annotate” and click an element.", view: "View", go: "Go to page" };
+    ? { annotate: "Anotar", pick: "Elige un elemento", pickHelp: "Clic en un elemento, o flechas y Enter. Esc cancela.", page: "Nota de página",
+        notes: "Notas", note: "Nota", hint: "Qué cambiar aquí…", keys: "Ctrl+Enter guarda · Esc cancela", parent: "Ampliar al contenedor",
+        del: "Borrar", cancel: "Cancelar", save: "Guardar", empty: "Sin notas. Pulsa «Anotar» y elige un elemento.", view: "Ver",
+        go: "Ir a la página", move: "Mover la barra al otro lado", saved: "Nota guardada", deleted: "Nota borrada",
+        failed: "No se pudo guardar. ¿Sigue abierta la sesión?", missing: "elemento no encontrado", dialog: "Nota para", shortcut: "Alt+A" }
+    : { annotate: "Annotate", pick: "Pick an element", pickHelp: "Click an element, or use the arrow keys and Enter. Esc cancels.", page: "Page note",
+        notes: "Notes", note: "Note", hint: "What to change here…", keys: "Ctrl+Enter saves · Esc cancels", parent: "Widen to the container",
+        del: "Delete", cancel: "Cancel", save: "Save", empty: "No notes yet. Press “Annotate” and pick an element.", view: "View",
+        go: "Go to page", move: "Move the bar to the other side", saved: "Note saved", deleted: "Note deleted",
+        failed: "Could not save. Is the session still open?", missing: "element not found", dialog: "Note for", shortcut: "Alt+A" };
 
   const host = document.createElement("div");
   host.style.cssText = "position:absolute;top:0;left:0;width:0;height:0;z-index:2147483647";
   const root = host.attachShadow({ mode: "open" });
   root.innerHTML = `
     <style>
-      * { box-sizing: border-box; font: 13px/1.4 system-ui, sans-serif; }
-      .hl { position: absolute; pointer-events: none; outline: 2px solid #e11d48; background: rgb(225 29 72 / .12); display: none; }
-      .pin { position: absolute; min-width: 22px; height: 22px; padding: 0 5px; border: 2px solid #fff; border-radius: 11px;
-             background: #e11d48; color: #fff; font-weight: 700; cursor: pointer; transform: translate(-8px, -8px); }
-      .bar { position: fixed; right: 16px; bottom: 16px; display: flex; gap: 6px; padding: 6px; background: #111; border-radius: 8px;
-             box-shadow: 0 4px 16px rgb(0 0 0 / .35); }
-      button { border: 0; border-radius: 5px; padding: 6px 10px; background: #333; color: #fff; cursor: pointer; }
-      button:focus-visible, textarea:focus-visible { outline: 2px solid #fda4af; outline-offset: 1px; }
-      button.on, button.primary { background: #e11d48; }
-      .pop, .panel { position: fixed; right: 16px; bottom: 64px; width: min(340px, calc(100vw - 32px)); padding: 10px;
-                     background: #111; color: #fff; border-radius: 8px; box-shadow: 0 4px 16px rgb(0 0 0 / .35); }
-      .pop p, .panel p { margin: 0 0 6px; color: #bbb; font-size: 12px; overflow-wrap: anywhere; }
-      textarea { display: block; width: 100%; height: 96px; margin-bottom: 8px; padding: 6px; border: 0; border-radius: 5px; resize: vertical; }
-      .row { display: flex; gap: 6px; justify-content: flex-end; }
+      * { box-sizing: border-box; font: 15px/1.4 system-ui, sans-serif; }
+      /* Yellow on a dark ring: visible over any page colour. */
+      .hl { position: absolute; pointer-events: none; display: none; border-radius: 2px; outline: 3px solid #facc15;
+            box-shadow: 0 0 0 6px #111, inset 0 0 0 9999px rgb(250 204 21 / .18); }
+      .pin { position: absolute; min-width: 28px; height: 28px; padding: 0 6px; border: 2px solid #111; border-radius: 14px;
+             background: #facc15; color: #111; font-weight: 700; cursor: pointer; transform: translate(-10px, -10px);
+             box-shadow: 0 0 0 2px #fff; }
+      .ui { position: fixed; bottom: 16px; right: 16px; display: grid; gap: 8px; justify-items: end;
+            width: min(380px, calc(100vw - 32px)); pointer-events: none; }
+      .ui.left { right: auto; left: 16px; justify-items: start; }
+      .ui > * { pointer-events: auto; }
+      .bar, .pop, .panel { background: #111; color: #fff; border-radius: 10px; box-shadow: 0 4px 20px rgb(0 0 0 / .4); }
+      .bar { display: flex; flex-wrap: wrap; gap: 6px; padding: 6px; }
+      .pop, .panel { width: 100%; padding: 12px; }
+      button { min-height: 40px; border: 0; border-radius: 6px; padding: 0 14px; background: #2e2e2e; color: #fff; cursor: pointer; }
+      button:hover { background: #444; }
+      button.on, button.primary { background: #facc15; color: #111; font-weight: 700; }
+      button:focus-visible, textarea:focus-visible { outline: 3px solid #fff; outline-offset: 2px; }
+      .pin:focus-visible { outline: 3px solid #111; outline-offset: 4px; }
+      .status { width: 100%; padding: 2px 8px 4px; color: #facc15; font-size: 14px; }
+      .status:empty { display: none; }
+      .target, .meta, .keys { margin: 0 0 8px; color: #d4d4d4; font-size: 14px; overflow-wrap: anywhere; }
+      .keys { margin: 8px 0 0; }
+      textarea { display: block; width: 100%; height: 110px; margin: 8px 0; padding: 8px; border: 0; border-radius: 6px;
+                 background: #fff; color: #111; resize: vertical; }
+      .row { display: flex; flex-wrap: wrap; gap: 6px; justify-content: flex-end; }
       .panel { max-height: 60vh; overflow: auto; }
-      .item { padding: 8px 0; border-top: 1px solid #333; }
-      .item b { color: #fda4af; }
+      .item { padding: 10px 0; border-top: 1px solid #444; }
+      .item:first-child { border-top: 0; padding-top: 0; }
+      .item b { color: #facc15; }
+      .item .row { justify-content: flex-start; margin-top: 8px; }
       [hidden] { display: none !important; }
     </style>
     <div class="hl"></div>
     <div class="pins"></div>
-    <form class="pop" hidden>
-      <p class="target"></p>
-      <textarea aria-label="${T.note}" placeholder="${T.hint}" required></textarea>
-      <div class="row">
-        <button type="button" class="del" hidden>${T.del}</button>
-        <button type="button" class="cancel">${T.cancel}</button>
-        <button class="primary">${T.save}</button>
+    <div class="ui">
+      <div class="panel" role="region" aria-label="${T.notes}" hidden></div>
+      <form class="pop" hidden><div role="dialog" aria-labelledby="target">
+        <p class="target" id="target"></p>
+        <button type="button" class="parent">↑ ${T.parent}</button>
+        <textarea aria-label="${T.note}" placeholder="${T.hint}" required></textarea>
+        <div class="row">
+          <button type="button" class="del" hidden>${T.del}</button>
+          <button type="button" class="cancel">${T.cancel}</button>
+          <button class="primary">${T.save}</button>
+        </div>
+        <p class="keys">${T.keys}</p>
+      </div></form>
+      <div class="bar">
+        <div class="status" role="status"></div>
+        <button class="toggle" aria-pressed="false" title="${T.shortcut}" aria-keyshortcuts="Alt+A">${T.annotate}</button>
+        <button class="page">${T.page}</button>
+        <button class="list" aria-expanded="false">${T.notes} (0)</button>
+        <button class="move" aria-label="${T.move}" title="${T.move}">⇄</button>
       </div>
-    </form>
-    <div class="panel" hidden></div>
-    <div class="bar">
-      <button class="toggle" aria-pressed="false">${T.annotate}</button>
-      <button class="list">${T.notes} (0)</button>
     </div>`;
   document.documentElement.append(host);
 
   const $ = (s) => root.querySelector(s);
-  const hl = $(".hl"), pins = $(".pins"), pop = $(".pop"), panel = $(".panel"), toggle = $(".toggle"), list = $(".list");
+  const hl = $(".hl"), pins = $(".pins"), ui = $(".ui"), pop = $(".pop"), panel = $(".panel"), status = $(".status");
+  const toggle = $(".toggle"), list = $(".list");
   const area = pop.querySelector("textarea");
   let notes = [];
   let picking = false;
+  let current = null; // element under the pointer or the arrow keys while picking
   let draft = null; // note being written or edited
+  let draftEl = null;
 
   const selectorOf = (el) => {
     const parts = [];
@@ -73,29 +103,53 @@
     try { return document.querySelector(note.selector); } catch { return null; }
   };
   const here = (note) => note.path === location.pathname;
-  const box = (el) => {
+  const pickable = (el) => el && el !== host && el.nodeType === 1 && document.body.contains(el);
+  const describe = (el) => ({
+    selector: selectorOf(el),
+    tag: el.tagName.toLowerCase(),
+    classes: el.className?.baseVal ?? el.className ?? "",
+    text: (el === document.body ? document.title : (el.innerText ?? el.textContent ?? "")).trim().replace(/\s+/g, " ").slice(0, 120),
+    html: el === document.body ? "" : el.outerHTML.slice(0, 300),
+  });
+
+  const mark = (el) => {
+    if (!el || el === document.body) return void (hl.style.display = "none");
     const r = el.getBoundingClientRect();
-    return { left: r.left + scrollX, top: r.top + scrollY, width: r.width, height: r.height };
+    Object.assign(hl.style, { display: "block", left: `${r.left + scrollX}px`, top: `${r.top + scrollY}px`, width: `${r.width}px`, height: `${r.height}px` });
+  };
+  let clear;
+  const say = (text) => {
+    status.textContent = text;
+    clearTimeout(clear);
+    clear = setTimeout(() => (status.textContent = ""), 5000);
   };
 
-  const save = async () => {
-    await fetch("/__annotate/notes", { method: "POST", body: JSON.stringify(notes) });
+  const save = async (done) => {
     render();
+    try {
+      const response = await fetch("/__annotate/notes", { method: "POST", body: JSON.stringify(notes) });
+      if (!response.ok) throw new Error(response.statusText);
+      say(done);
+    } catch {
+      say(T.failed);
+    }
   };
 
   function render() {
     pins.replaceChildren();
     notes.forEach((note, i) => {
-      const el = here(note) && find(note);
+      const el = here(note) && note.tag !== "body" && find(note);
       if (!el) return;
-      const b = box(el);
+      const r = el.getBoundingClientRect();
       const pin = document.createElement("button");
       pin.className = "pin";
       pin.textContent = i + 1;
+      pin.setAttribute("aria-label", `${T.note} ${i + 1}: ${note.note}`);
       pin.title = note.note;
-      pin.style.left = `${b.left}px`;
-      pin.style.top = `${b.top}px`;
-      pin.onclick = () => open(note);
+      // Kept off the page edge, where the pin would be cut in half.
+      pin.style.left = `${Math.max(12, r.left + scrollX)}px`;
+      pin.style.top = `${Math.max(12, r.top + scrollY)}px`;
+      pin.onclick = () => open(note, el);
       pins.append(pin);
     });
     list.textContent = `${T.notes} (${notes.length})`;
@@ -104,87 +158,150 @@
         const item = document.createElement("div");
         item.className = "item";
         if (!note) { item.textContent = T.empty; return item; }
-        const head = document.createElement("p");
-        head.innerHTML = `<b>${i + 1}</b> `;
-        head.append(`${note.path} · ${note.text || note.tag}`);
+        const el = here(note) ? find(note) : null;
+        const meta = document.createElement("p");
+        meta.className = "meta";
+        const number = document.createElement("b");
+        number.textContent = `${i + 1} `;
+        meta.append(number, `${note.path} · ${note.text || note.tag}${here(note) && !el ? ` · ${T.missing}` : ""}`);
         const text = document.createElement("div");
         text.textContent = note.note;
+        const row = document.createElement("div");
+        row.className = "row";
         const go = document.createElement("button");
         go.textContent = here(note) ? T.view : T.go;
-        go.style.marginTop = "6px";
         go.onclick = () => {
           if (!here(note)) return void (location.href = note.path);
-          find(note)?.scrollIntoView({ block: "center" });
-          open(note);
+          el?.scrollIntoView({ block: "center" });
+          open(note, el);
         };
-        item.append(head, text, go);
+        const del = document.createElement("button");
+        del.textContent = T.del;
+        del.onclick = () => { notes = notes.filter((n) => n !== note); save(T.deleted); };
+        row.append(go, del);
+        item.append(meta, text, row);
         return item;
       }),
     );
   }
 
-  function open(note) {
+  const showPanel = (on) => {
+    panel.hidden = !on;
+    list.setAttribute("aria-expanded", on);
+  };
+  function target(el) {
+    draftEl = el;
+    pop.querySelector(".target").textContent = `${T.dialog} <${draft.tag}> ${draft.text}`;
+    pop.querySelector(".parent").hidden = !el || el === document.body || !pickable(el.parentElement);
+    mark(el);
+  }
+  function open(note, el) {
     draft = note;
-    panel.hidden = true;
+    showPanel(false);
     pop.hidden = false;
-    pop.querySelector(".target").textContent = `<${note.tag}> ${note.text}`;
     pop.querySelector(".del").hidden = !notes.includes(note);
     area.value = note.note ?? "";
+    target(el);
     area.focus();
   }
-  const close = () => { pop.hidden = true; draft = null; };
+  const close = () => {
+    pop.hidden = true;
+    draft = draftEl = null;
+    mark(null);
+    toggle.focus();
+  };
   const setPicking = (on) => {
     picking = on;
     toggle.classList.toggle("on", on);
     toggle.setAttribute("aria-pressed", on);
     toggle.textContent = on ? T.pick : T.annotate;
-    if (!on) hl.style.display = "none";
+    if (on) say(T.pickHelp);
+    else { current = null; mark(null); status.textContent = ""; }
+  };
+  const choose = (el) => {
+    setPicking(false);
+    open({
+      id: Date.now().toString(36),
+      path: location.pathname,
+      ...describe(el),
+      viewport: `${innerWidth}x${innerHeight}`,
+      theme: document.documentElement.dataset.theme ?? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"),
+      created: new Date().toISOString(),
+    }, el);
   };
 
-  toggle.onclick = () => setPicking(!picking);
-  list.onclick = () => { panel.hidden = !panel.hidden; pop.hidden = true; };
+  toggle.onclick = () => { if (!pop.hidden) close(); setPicking(!picking); };
+  $(".page").onclick = () => choose(document.body);
+  list.onclick = () => { showPanel(panel.hidden); if (!pop.hidden) close(); };
+  $(".move").onclick = () => {
+    const left = ui.classList.toggle("left");
+    try { localStorage.setItem("annotate-side", left ? "left" : "right"); } catch {}
+  };
+  try { ui.classList.toggle("left", localStorage.getItem("annotate-side") === "left"); } catch {}
+
+  pop.querySelector(".parent").onclick = () => {
+    Object.assign(draft, describe(draftEl.parentElement));
+    target(draftEl.parentElement);
+    area.focus();
+  };
   pop.querySelector(".cancel").onclick = close;
-  pop.querySelector(".del").onclick = () => { notes = notes.filter((n) => n !== draft); close(); save(); };
+  pop.querySelector(".del").onclick = () => { notes = notes.filter((n) => n !== draft); close(); save(T.deleted); };
+  area.onkeydown = (event) => {
+    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) pop.requestSubmit();
+  };
   pop.onsubmit = (event) => {
     event.preventDefault();
     draft.note = area.value.trim();
     if (!notes.includes(draft)) notes.push(draft);
     close();
-    save();
+    save(T.saved);
   };
 
   document.addEventListener("mousemove", (event) => {
-    if (!picking || event.target === host) return;
-    const b = box(event.target);
-    Object.assign(hl.style, { display: "block", left: `${b.left}px`, top: `${b.top}px`, width: `${b.width}px`, height: `${b.height}px` });
+    if (!picking || !pickable(event.target)) return;
+    mark((current = event.target));
   }, true);
   document.addEventListener("click", (event) => {
-    if (!picking || event.target === host) return;
+    if (!picking || !pickable(event.target)) return;
     event.preventDefault();
     event.stopPropagation();
-    const el = event.target;
-    setPicking(false);
-    open({
-      id: Date.now().toString(36),
-      path: location.pathname,
-      selector: selectorOf(el),
-      tag: el.tagName.toLowerCase(),
-      classes: el.className?.baseVal ?? el.className ?? "",
-      text: (el.innerText ?? el.textContent ?? "").trim().replace(/\s+/g, " ").slice(0, 120),
-      html: el.outerHTML.slice(0, 300),
-      viewport: `${innerWidth}x${innerHeight}`,
-      theme: document.documentElement.dataset.theme ?? (matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"),
-      created: new Date().toISOString(),
-    });
+    choose(event.target);
   }, true);
   document.addEventListener("keydown", (event) => {
-    if (event.key !== "Escape") return;
-    setPicking(false);
-    close();
-    panel.hidden = true;
-  });
-  addEventListener("resize", render);
-  addEventListener("load", render);
+    if (event.altKey && event.code === "KeyA") {
+      event.preventDefault();
+      return toggle.click();
+    }
+    if (event.key === "Escape") {
+      if (!pop.hidden) return close();
+      if (picking) return setPicking(false);
+      return showPanel(false);
+    }
+    if (!picking) return;
+    // Arrow keys walk the page structure: up to the container, down into it,
+    // left and right between siblings.
+    const from = current ?? document.querySelector("main") ?? document.body.firstElementChild;
+    const next = {
+      ArrowUp: from.parentElement,
+      ArrowDown: from.firstElementChild,
+      ArrowLeft: from.previousElementSibling,
+      ArrowRight: from.nextElementSibling,
+    }[event.key];
+    if (event.key === "Enter") {
+      event.preventDefault();
+      event.stopPropagation();
+      return choose(from);
+    }
+    if (next === undefined) return;
+    event.preventDefault();
+    // The first key press only shows where the walk starts.
+    current = current && pickable(next) ? next : from;
+    current.scrollIntoView({ block: "nearest" });
+    mark(current);
+  }, true);
+
+  // Pins follow the layout: fonts, images and resizes all move elements.
+  new ResizeObserver(() => { render(); mark(draftEl ?? current); }).observe(document.body);
 
   fetch("/__annotate/notes").then((r) => r.json()).then((saved) => { notes = saved; render(); });
 })();

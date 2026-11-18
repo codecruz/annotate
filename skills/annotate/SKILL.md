@@ -25,10 +25,16 @@ change. You read the notes and do the work.
 3. Keep the notes out of git without touching the repo's `.gitignore`:
    add `.annotations.json` to `.git/info/exclude` if it is not there.
 4. Give the user the URL (`http://localhost:4400/...`) and how it works:
-   **Annotate** → click an element → write the note → **Save**. Numbered
-   pins mark the notes; **Notes** lists them across pages; a pin reopens its
-   note to edit or delete. Esc cancels. Notes save on every change. The overlay shows in Spanish
-   when the browser language is Spanish, in English otherwise.
+   - **Annotate** (or Alt+A), then click an element. With the keyboard: the
+     arrow keys move through the page structure and Enter picks.
+   - Write the note and **Save** (Ctrl+Enter). **Widen to the container**
+     moves the note to the parent element when the click landed too deep.
+   - **Page note** leaves a note about the whole page.
+   - Numbered pins mark the notes; **Notes** lists them across pages, and a
+     pin reopens its note to edit or delete. Esc cancels. **⇄** moves the bar
+     to the other corner if it covers something.
+   - Notes save on every change. The overlay shows in Spanish when the
+     browser language is Spanish, in English otherwise.
 5. Stop there and wait for the user to say they are done.
 
 ## 2. Carry out the notes
@@ -52,7 +58,8 @@ change. You read the notes and do the work.
 
 ## Limits
 
-- Notes attach to elements, not to free regions or text selections.
+- Notes attach to elements or to the whole page (`tag` is `body`), not to
+  free regions or text selections.
 - The proxy does not forward WebSockets, so hot reload does not work through
   it: reload the page after a change. With a static server it makes no
   difference.
