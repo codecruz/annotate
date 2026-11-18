@@ -24,6 +24,28 @@ When you are done, Claude reads the file and does the work.
 | `/annotate:apply` | Carries out the notes and removes the resolved ones. |
 | `/annotate:stop` | Closes the session. Open notes are kept. |
 
+## What it looks like
+
+**1. Pick.** Press **Annotate** and point at the element. It is outlined as
+you move; with the keyboard, the arrow keys walk the page and Enter picks.
+
+![Picking the page title](docs/assets/shot-pick.png)
+
+**2. Write.** Say what you want in your own words. If the click landed too
+deep, **Widen to the container** moves the note up one level.
+
+![Writing a note on a button](docs/assets/shot-note.png)
+
+**3. Review.** Each note leaves a numbered pin. **Notes** lists them across
+pages, takes you to each one, and can copy them all as text.
+
+![Three pins and the notes list](docs/assets/shot-list.png)
+
+**4. Apply.** Claude reads the notes, finds the code behind each element and
+makes the change. In a real session on a portfolio site, ten notes left on
+the home page were applied in one pass and the file came back empty: no
+pins left means nothing is pending.
+
 Each note records the page, a selector, the element's text and HTML, the
 viewport size and the colour theme, so "this is too big on mobile" carries
 its context.

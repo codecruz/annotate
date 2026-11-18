@@ -25,6 +25,29 @@ Cuando terminas, Claude lee el archivo y hace el trabajo.
 | `/annotate:apply` | Aplica las notas y borra las resueltas. |
 | `/annotate:stop` | Cierra la sesión. Las notas abiertas se conservan. |
 
+## Cómo se ve
+
+**1. Elige.** Pulsa **Anotar** y señala el elemento. Se resalta al pasar por
+encima; con el teclado, las flechas recorren la página y Enter elige.
+
+![Eligiendo el título de la página](docs/assets/shot-pick-es.png)
+
+**2. Escribe.** Di lo que quieres con tus palabras. Si el clic ha caído
+demasiado dentro, **Ampliar al contenedor** sube la nota un nivel.
+
+![Escribiendo una nota sobre un botón](docs/assets/shot-note-es.png)
+
+**3. Revisa.** Cada nota deja un pin numerado. **Notas** las lista todas,
+también las de otras páginas, te lleva a cada una y puede copiarlas como
+texto.
+
+![Tres pines y la lista de notas](docs/assets/shot-list-es.png)
+
+**4. Aplica.** Claude lee las notas, busca el código de cada elemento y hace
+el cambio. En una sesión real sobre un portfolio, diez notas dejadas en la
+página de inicio se aplicaron de una pasada y el archivo volvió vacío: si no
+quedan pines, no queda nada pendiente.
+
 Cada nota guarda la página, un selector, el texto y el HTML del elemento, el
 tamaño de la ventana y el tema de color, para que «esto es demasiado grande
 en móvil» llegue con su contexto.

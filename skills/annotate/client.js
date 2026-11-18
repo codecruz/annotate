@@ -29,7 +29,7 @@
       .hl { position: absolute; pointer-events: none; display: none; border-radius: 2px; outline: 3px solid #facc15;
             box-shadow: 0 0 0 6px #111, inset 0 0 0 9999px rgb(250 204 21 / .18); }
       .pin { position: absolute; min-width: 28px; height: 28px; padding: 0 6px; border: 2px solid #111; border-radius: 14px;
-             background: #facc15; color: #111; font-weight: 700; cursor: pointer; transform: translate(-10px, -10px);
+             background: #facc15; color: #111; font-weight: 700; cursor: pointer; transform: translate(-24px, -16px);
              box-shadow: 0 0 0 2px #fff; }
       .ui { position: fixed; bottom: 16px; right: 16px; display: grid; gap: 8px; justify-items: end;
             width: min(380px, calc(100vw - 32px)); pointer-events: none; }
@@ -147,9 +147,10 @@
       pin.textContent = i + 1;
       pin.setAttribute("aria-label", `${T.note} ${i + 1}: ${note.note}`);
       pin.title = note.note;
-      // Kept off the page edge, where the pin would be cut in half.
-      pin.style.left = `${Math.max(12, r.left + scrollX)}px`;
-      pin.style.top = `${Math.max(12, r.top + scrollY)}px`;
+      // Hangs off the element's corner so it does not cover its first
+      // letters, and stays on the page at the edges.
+      pin.style.left = `${Math.max(26, r.left + scrollX)}px`;
+      pin.style.top = `${Math.max(18, r.top + scrollY)}px`;
       pin.onclick = () => open(note, el);
       pins.append(pin);
     });
