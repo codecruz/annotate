@@ -12,6 +12,11 @@ jobs:
       matrix:
         os: [ubuntu-24.04, macos-latest, windows-latest]
         node: [20, 22]
+        # macOS runners are scarce and jobs get cancelled in the queue: one
+        # Node version there is enough, Linux and Windows cover both.
+        exclude:
+          - os: macos-latest
+            node: 20
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
