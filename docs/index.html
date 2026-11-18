@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>annotate</title>
+<meta name="description" content="Annotate your locally running site in the browser and let Claude Code carry out the notes.">
+<meta property="og:title" content="annotate">
+<meta property="og:description" content="Annotate your locally running site in the browser and let Claude Code carry out the notes.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://codecruz.github.io/annotate/">
+<meta property="og:site_name" content="annotate">
+<meta property="og:locale" content="en_US">
+<meta property="og:locale:alternate" content="es_ES">
+<meta property="og:image" content="https://codecruz.github.io/annotate/assets/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="annotate: click an element of your page, leave a note, Claude makes the change">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:image" content="https://codecruz.github.io/annotate/assets/og-image.png">
+<meta name="theme-color" content="#fbfaf7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#141413" media="(prefers-color-scheme: dark)">
+<link rel="canonical" href="https://codecruz.github.io/annotate/">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<style>
+  :root {
+    --bg: #fbfaf7;
+    --surface: #ffffff;
+    --text: #1d1c1a;
+    --muted: #63605a;
+    --border: #e4e1da;
+    --accent: #be123c;
+    --accent-soft: #ffe4e6;
+    --code-bg: #f3f1ec;
+    --mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --sans: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #141413;
+      --surface: #1c1b19;
+      --text: #ecebe7;
+      --muted: #a4a19a;
+      --border: #2f2d2a;
+      --accent: #fb7185;
+      --accent-soft: #3b1a22;
+      --code-bg: #22211e;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--text);
+    font: 16px/1.6 var(--sans);
+  }
+  a { color: var(--accent); }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 16px; }
+
+  header.top {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 20px 0; gap: 12px;
+  }
+  .brand { font: 600 18px var(--mono); color: var(--text); text-decoration: none; }
+  .top nav { display: flex; align-items: center; gap: 16px; font-size: 15px; }
+  .top nav a { color: var(--muted); text-decoration: none; }
+  .top nav a:hover { color: var(--text); }
+  .lang-switch {
+    font: inherit; font-size: 14px; color: var(--text); background: var(--surface);
+    border: 1px solid var(--border); border-radius: 999px; padding: 4px 12px; cursor: pointer;
+  }
+
+  .hero { padding: 40px 0 24px; }
+  .hero h1 { font-size: clamp(30px, 6vw, 46px); line-height: 1.15; margin: 0 0 16px; letter-spacing: -0.02em; }
+  .hero p { font-size: 19px; color: var(--muted); margin: 0 0 24px; max-width: 640px; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    display: inline-block; padding: 10px 18px; border-radius: 8px; text-decoration: none;
+    font-weight: 600; font-size: 15px; border: 1px solid var(--border); color: var(--text); background: var(--surface);
+  }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--bg); }
+
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+  .demo { margin: 32px 0 8px; overflow: hidden; }
+  .demo-head { padding: 10px 16px; font-size: 14px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  pre.block {
+    margin: 0; padding: 20px; overflow-x: auto; font: 14px/1.7 var(--mono); background: var(--code-bg);
+  }
+  .demo-foot { padding: 10px 16px; font-size: 14px; color: var(--muted); border-top: 1px solid var(--border); }
+  .demo-foot code { font-size: 13px; }
+  .note { font-size: 15px; color: var(--muted); margin: 12px 0 0; }
+
+  section { padding: 40px 0 8px; }
+  h2 { font-size: 26px; margin: 0 0 16px; letter-spacing: -0.01em; }
+  .features { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; }
+  .feature { padding: 18px; }
+  .feature h3 { margin: 0 0 6px; font-size: 17px; }
+  .feature p { margin: 0; color: var(--muted); font-size: 15px; }
+
+  ol.steps { list-style: none; padding: 0; margin: 0; counter-reset: step; }
+  ol.steps li { counter-increment: step; position: relative; padding-left: 44px; margin-bottom: 22px; }
+  ol.steps li::before {
+    content: counter(step); position: absolute; left: 0; top: 0;
+    width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center;
+    background: var(--accent-soft); color: var(--accent); font-weight: 700; font-size: 15px;
+  }
+  ol.steps p { margin: 2px 0 8px; }
+  code { font-family: var(--mono); font-size: 0.92em; background: var(--code-bg); padding: 1px 5px; border-radius: 4px; }
+  pre.cmd {
+    margin: 0; padding: 12px 14px; background: var(--code-bg); border-radius: 8px; overflow-x: auto;
+    font: 14px/1.6 var(--mono); border: 1px solid var(--border);
+  }
+  ul.plain { padding-left: 20px; margin: 0; }
+  ul.plain li { margin-bottom: 8px; }
+
+  footer { padding: 48px 0 40px; color: var(--muted); font-size: 14px; border-top: 1px solid var(--border); margin-top: 48px; }
+  footer .wrap { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+
+  @media (max-width: 560px) {
+    .top nav a.hide-sm { display: none; }
+    .hero { padding-top: 16px; }
+    .hero p { font-size: 17px; }
+    pre.block { font-size: 12px; padding: 14px; }
+  }
+
+  /* Live demo: a mock page whose parts can be annotated. */
+  .mock { position: relative; padding: 24px 20px; display: grid; gap: 12px; }
+  .mock [data-pick] {
+    position: relative; margin: 0; padding: 6px 8px; border-radius: 6px; cursor: pointer;
+    outline: 2px solid transparent; outline-offset: 0;
+  }
+  .mock [data-pick]:hover, .mock [data-pick]:focus-visible { outline-color: var(--accent); background: var(--accent-soft); }
+  .mock h3 { font-size: 22px; letter-spacing: -0.01em; }
+  .mock p { color: var(--muted); max-width: 520px; }
+  .mock .fake-btn {
+    justify-self: start; padding: 8px 16px; border: 1px solid var(--border); background: var(--code-bg); font-weight: 600; font-size: 15px;
+  }
+  .pin {
+    position: absolute; left: -10px; top: -10px; min-width: 22px; height: 22px; padding: 0 5px; border-radius: 11px;
+    display: grid; place-items: center; background: #e11d48; color: #fff; font: 700 12px var(--sans); border: 2px solid var(--surface);
+  }
+  .note-form { display: flex; flex-wrap: wrap; gap: 8px; padding: 12px 16px; border-top: 1px solid var(--border); align-items: center; }
+  .note-form label { font-size: 14px; color: var(--muted); }
+  .note-form input {
+    flex: 1 1 220px; min-width: 0; font: inherit; font-size: 15px; padding: 8px 10px; border-radius: 8px;
+    border: 1px solid var(--border); background: var(--bg); color: var(--text);
+  }
+  .note-form button { font: inherit; cursor: pointer; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="./">annotate</a>
+    <nav>
+      <a class="hide-sm" href="#install" data-i18n="nav_install">Install</a>
+      <a class="hide-sm" href="#privacy" data-i18n="nav_privacy">Privacy</a>
+      <a href="https://github.com/codecruz/annotate">GitHub</a>
+      <button class="lang-switch" id="lang-switch" type="button" aria-label="Español">ES</button>
+    </nav>
+  </header>
+
+  <div class="hero">
+    <h1 data-i18n="hero_title">Point at your page, write the change, let Claude do it</h1>
+    <p data-i18n="hero_text">annotate is a Claude Code plugin. It puts an annotation layer over the site you are running locally: click an element, leave a note, and Claude finds the code behind it and makes the change.</p>
+    <div class="cta">
+      <a class="btn primary" href="#install" data-i18n="cta_install">Install it</a>
+      <a class="btn" id="readme-link" href="https://github.com/codecruz/annotate#readme" data-i18n="cta_docs">Read the docs</a>
+    </div>
+  </div>
+
+  <div class="card demo" aria-label="Annotation demo">
+    <div class="demo-head" data-i18n="demo_head">Try it: click any part of this sample page and leave a note.</div>
+    <div class="mock" id="mock">
+      <h3 data-pick tabindex="0" role="button">Fresh bread, every morning</h3>
+      <p data-pick tabindex="0" role="button">We bake from 5 am and deliver before 8. Order by midnight for next-day delivery anywhere in the city.</p>
+      <span class="fake-btn" data-pick tabindex="0" role="button">Order now</span>
+    </div>
+    <form class="note-form" id="note-form" hidden>
+      <label for="note-input" id="note-label"></label>
+      <input id="note-input" type="text" autocomplete="off" required>
+      <button class="btn primary" data-i18n="demo_save">Save</button>
+    </form>
+    <pre class="block" id="block"></pre>
+    <div class="demo-foot" data-i18n="demo_foot">This is what Claude reads: <code>.annotations.json</code> in your project.</div>
+  </div>
+  <p class="note" data-i18n="measures"><strong>What a note carries:</strong> the page, the element and its text, the window size and the colour theme. “Too big on mobile” arrives with its context.</p>
+
+  <section>
+    <h2 data-i18n="features_title">Why annotate</h2>
+    <div class="features">
+      <div class="card feature">
+        <h3 data-i18n="f1_t">Show, don’t describe</h3>
+        <p data-i18n="f1_p">No more “the second card under the header”. Click the thing and say what you want.</p>
+      </div>
+      <div class="card feature">
+        <h3 data-i18n="f2_t">Works with what you run</h3>
+        <p data-i18n="f2_p">Any site already served on localhost: a static build, Astro, Next.js, Django, anything. Your project is not modified.</p>
+      </div>
+      <div class="card feature">
+        <h3 data-i18n="f3_t">Pins are your to-do list</h3>
+        <p data-i18n="f3_p">Claude removes each note it resolves. The pins left on the page are the work still open.</p>
+      </div>
+      <div class="card feature">
+        <h3 data-i18n="f4_t">Notes across pages</h3>
+        <p data-i18n="f4_p">Annotate the whole site in one pass. The notes list takes you back to each one.</p>
+      </div>
+      <div class="card feature">
+        <h3 data-i18n="f5_t">Nothing to install</h3>
+        <p data-i18n="f5_p">One small script with no dependencies. Only Node 18 or newer is needed.</p>
+      </div>
+      <div class="card feature">
+        <h3 data-i18n="f6_t">English and Spanish</h3>
+        <p data-i18n="f6_p">The layer follows your browser language. Write the notes in any language you like.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="install">
+    <h2 data-i18n="install_title">Get started</h2>
+    <ol class="steps">
+      <li>
+        <p data-i18n="s1">Install the plugin. In Claude Code:</p>
+        <pre class="cmd">/plugin marketplace add codecruz/claude-plugins
+/plugin install annotate@codecruz</pre>
+        <p class="note" data-i18n="s1_note">Then start a new session, or run <code>/reload-plugins</code>.</p>
+      </li>
+      <li>
+        <p data-i18n="s2">Serve your project locally as you always do, and ask Claude:</p>
+        <pre class="cmd" data-i18n="s2_cmd">I want to annotate the site</pre>
+      </li>
+      <li>
+        <p data-i18n="s3">Open the address Claude gives you. Press <strong>Annotate</strong>, click an element, write the note and save. Repeat on any page.</p>
+      </li>
+      <li>
+        <p data-i18n="s4">Tell Claude you are done. It makes each change and reports note by note.</p>
+        <pre class="cmd" data-i18n="s4_cmd">Done, apply my notes</pre>
+      </li>
+    </ol>
+  </section>
+
+  <section id="privacy">
+    <h2 data-i18n="privacy_title">Privacy</h2>
+    <ul class="plain">
+      <li data-i18n="p1">Everything stays on your computer. The notes live in <code>.annotations.json</code>, inside your project.</li>
+      <li data-i18n="p2">The helper only listens on <code>127.0.0.1</code> and only forwards to <code>localhost</code>. <strong>It cannot be pointed at a public site.</strong></li>
+      <li data-i18n="p3">Your project files are not changed by the layer: it is added to the pages on the fly, only while the session is open.</li>
+      <li data-i18n="p4">No accounts, no network calls, no analytics.</li>
+    </ul>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap">
+    <span data-i18n="footer_license">MIT license · Made for Claude Code</span>
+    <span><a href="https://github.com/codecruz/annotate">github.com/codecruz/annotate</a></span>
+  </div>
+</footer>
+
+<script>
+(function () {
+  var notes = [{ selector: "#mock > span", text: "Order now", note: "Make this button the accent colour" }];
+  var form = document.getElementById("note-form");
+  var input = document.getElementById("note-input");
+  var label = document.getElementById("note-label");
+  var picks = Array.prototype.slice.call(document.querySelectorAll("[data-pick]"));
+  var target = null;
+
+  function selectorOf(el) { return "#mock > " + el.tagName.toLowerCase(); }
+  function render() {
+    picks.forEach(function (el) {
+      var old = el.querySelector(".pin");
+      if (old) old.remove();
+      var i = notes.findIndex(function (n) { return n.selector === selectorOf(el); });
+      if (i < 0) return;
+      var pin = document.createElement("span");
+      pin.className = "pin";
+      pin.textContent = i + 1;
+      pin.setAttribute("aria-hidden", "true");
+      el.appendChild(pin);
+    });
+    document.getElementById("block").textContent = JSON.stringify({ notes: notes }, null, 2);
+  }
+  function pick(el) {
+    target = el;
+    var existing = notes.find(function (n) { return n.selector === selectorOf(el); });
+    label.textContent = "<" + el.tagName.toLowerCase() + ">";
+    input.value = existing ? existing.note : "";
+    form.hidden = false;
+    input.focus();
+  }
+  picks.forEach(function (el) {
+    el.addEventListener("click", function () { pick(el); });
+    el.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(el); }
+    });
+  });
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    var selector = selectorOf(target);
+    var pin = target.querySelector(".pin");
+    var text = target.textContent.replace(pin ? pin.textContent : "", "").trim().slice(0, 60);
+    notes = notes.filter(function (n) { return n.selector !== selector; });
+    notes.push({ selector: selector, text: text, note: input.value.trim() });
+    form.hidden = true;
+    render();
+  });
+  render();
+
+  var ES = {
+    nav_install: "Instalar",
+    nav_privacy: "Privacidad",
+    hero_title: "Señala en tu página, escribe el cambio y deja que Claude lo haga",
+    hero_text: "annotate es un plugin de Claude Code. Pone una capa de anotación sobre la web que tienes en local: haz clic en un elemento, deja una nota y Claude encuentra el código que hay detrás y hace el cambio.",
+    cta_install: "Instálalo",
+    cta_docs: "Lee la documentación",
+    demo_head: "Pruébalo: haz clic en cualquier parte de esta página de ejemplo y deja una nota.",
+    demo_save: "Guardar",
+    demo_foot: "Esto es lo que lee Claude: <code>.annotations.json</code> en tu proyecto.",
+    measures: "<strong>Qué lleva cada nota:</strong> la página, el elemento y su texto, el tamaño de la ventana y el tema de color. «Demasiado grande en móvil» llega con su contexto.",
+    features_title: "Por qué annotate",
+    f1_t: "Señala en vez de describir",
+    f1_p: "Se acabó «la segunda tarjeta debajo de la cabecera». Haz clic en la cosa y di qué quieres.",
+    f2_t: "Funciona con lo que ya usas",
+    f2_p: "Cualquier web servida en localhost: un build estático, Astro, Next.js, Django, lo que sea. Tu proyecto no se modifica.",
+    f3_t: "Los pines son tu lista de tareas",
+    f3_p: "Claude borra cada nota que resuelve. Los pines que quedan en la página son el trabajo pendiente.",
+    f4_t: "Notas en varias páginas",
+    f4_p: "Anota toda la web de una pasada. La lista de notas te lleva de vuelta a cada una.",
+    f5_t: "Nada que instalar",
+    f5_p: "Un script pequeño y sin dependencias. Solo hace falta Node 18 o superior.",
+    f6_t: "Español e inglés",
+    f6_p: "La capa sigue el idioma de tu navegador. Escribe las notas en el idioma que quieras.",
+    install_title: "Empieza",
+    s1: "Instala el plugin. En Claude Code:",
+    s1_note: "Después abre una sesión nueva o ejecuta <code>/reload-plugins</code>.",
+    s2: "Sirve tu proyecto en local como siempre y pídeselo a Claude:",
+    s2_cmd: "Quiero anotar la web",
+    s3: "Abre la dirección que te da Claude. Pulsa <strong>Anotar</strong>, haz clic en un elemento, escribe la nota y guarda. Repite en cualquier página.",
+    s4: "Dile a Claude que has terminado. Hace cada cambio y te informa nota por nota.",
+    s4_cmd: "Listo, aplica mis notas",
+    privacy_title: "Privacidad",
+    p1: "Todo se queda en tu ordenador. Las notas viven en <code>.annotations.json</code>, dentro de tu proyecto.",
+    p2: "El programa auxiliar solo escucha en <code>127.0.0.1</code> y solo reenvía a <code>localhost</code>. <strong>No se puede apuntar a una web pública.</strong>",
+    p3: "La capa no cambia los archivos de tu proyecto: se añade a las páginas al vuelo, solo mientras la sesión está abierta.",
+    p4: "Sin cuentas, sin llamadas de red, sin analítica.",
+    footer_license: "Licencia MIT · Hecho para Claude Code"
+  };
+  var EN = {};
+  Array.prototype.forEach.call(document.querySelectorAll("[data-i18n]"), function (el) {
+    EN[el.dataset.i18n] = el.innerHTML;
+  });
+
+  function setLang(lang) {
+    var dict = lang === "es" ? ES : EN;
+    Array.prototype.forEach.call(document.querySelectorAll("[data-i18n]"), function (el) {
+      el.innerHTML = dict[el.dataset.i18n];
+    });
+    document.documentElement.lang = lang;
+    var sw = document.getElementById("lang-switch");
+    sw.textContent = lang === "es" ? "EN" : "ES";
+    sw.setAttribute("aria-label", lang === "es" ? "English" : "Español");
+    document.getElementById("readme-link").href = lang === "es"
+      ? "https://github.com/codecruz/annotate/blob/main/README.es.md"
+      : "https://github.com/codecruz/annotate#readme";
+    try { localStorage.setItem("annotate-lang", lang); } catch (e) {}
+  }
+  var saved = null;
+  try { saved = localStorage.getItem("annotate-lang"); } catch (e) {}
+  var initial = saved || (/^es\b/i.test(navigator.language || "") ? "es" : "en");
+  if (initial === "es") setLang("es");
+  document.getElementById("lang-switch").addEventListener("click", function () {
+    setLang(document.documentElement.lang === "es" ? "en" : "es");
+  });
+})();
+</script>
+</body>
+</html>
