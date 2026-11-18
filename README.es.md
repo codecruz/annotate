@@ -130,7 +130,8 @@ como señal.
 
 - Todo se queda en tu ordenador. Sin cuentas, sin llamadas de red, sin
   analítica.
-- El proxy solo escucha en `127.0.0.1` y solo reenvía a `localhost`.
+- El proxy solo es accesible desde tu propio ordenador, en `localhost`
+  (`127.0.0.1`), y solo reenvía a una web que también esté en `localhost`.
 - Solo acepta notas y la señal de **Enviar a Claude** de las páginas que él
   mismo sirve, así que otra web abierta en tu navegador no puede colar una
   nota ni arrancar el trabajo.

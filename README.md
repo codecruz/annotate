@@ -127,7 +127,8 @@ runs background commands can use it as its cue.
 
 - Everything stays on your computer. No accounts, no network calls, no
   analytics.
-- The proxy only listens on `127.0.0.1` and only forwards to `localhost`.
+- The proxy is only reachable from your own computer, at `localhost`
+  (`127.0.0.1`), and only forwards to a site that is also on `localhost`.
 - Notes and the **Send to Claude** signal are accepted only from the pages
   the proxy serves, so another site open in your browser cannot plant a
   note or start the work.
