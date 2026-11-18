@@ -60,7 +60,12 @@ test("refuses notes from another site and requests for another host", async () =
 
   const { request } = await import("node:http");
   const status = await new Promise((done) =>
-    request({ port: PORT, host: "127.0.0.1", path: "/", headers: { host: "evil.example" } }, (res) => done(res.statusCode)).end(),
+    request({ port: PORT, host: "127.0.0.1", path: "/", agent: false, headers: { host: "evil.example" } }, (res) => {
+      res.resume();
+      res.once("end", () => done(res.statusCode));
+    })
+      .once("error", () => done(0))
+      .end(),
   );
   assert.equal(status, 403);
 });
