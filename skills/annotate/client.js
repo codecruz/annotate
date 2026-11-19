@@ -291,7 +291,10 @@
   pop.querySelector(".cancel").onclick = close;
   pop.querySelector(".del").onclick = () => { notes = notes.filter((n) => n !== draft); close(); save(T.deleted); };
   area.onkeydown = (event) => {
-    if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) pop.requestSubmit();
+    if (!(event.key === "Enter" && (event.ctrlKey || event.metaKey))) return;
+    // Saving moves focus to the Annotate button: without this the same Enter presses it.
+    event.preventDefault();
+    pop.requestSubmit();
   };
   pop.onsubmit = (event) => {
     event.preventDefault();
